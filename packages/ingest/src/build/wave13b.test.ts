@@ -158,3 +158,15 @@ it('omits unavailable dataset entries and their derived navigation', () => {
   expect(read('law.json')).not.toHaveProperty('pending');
   expect(read('feed.json').expected.some((item: any) => item.id === 'P04')).toBe(false);
 });
+
+it('keeps editorial links only to datasets in the active catalog', () => {
+  const raw = structuredClone((result.outputs.get('wording') as any).catalog);
+  const activeSlug = catalogActive(raw).datasets[0]!.slug;
+  for (const key of ['traps', 'methodology'])
+    raw[key][0].related = [activeSlug, 'p01', 'p02', 'p04', 'p06', 'absent-dataset', 'sebra'];
+  const active = catalogActive(raw);
+  for (const key of ['traps', 'methodology']) {
+    expect((active[key] as { related: string[] }[])[0]!.related).toEqual([activeSlug]);
+    expect(raw[key][0].related).toContain('absent-dataset');
+  }
+});

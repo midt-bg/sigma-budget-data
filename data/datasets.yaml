@@ -408,7 +408,7 @@ datasets:
   - Published editorial snapshot; original supplied raw text unavailable.
 - id: core
   catalogId: core
-  title: 'Ядро: източници, показатели без данни и основни числа'
+  title: 'Ядро: източници и основни числа'
   status: real
   files:
   - data/release/core.json

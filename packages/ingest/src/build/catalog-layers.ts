@@ -39,12 +39,13 @@ export function catalogActive(raw: CatalogDocument): CatalogDocument {
     (f: any) => !(f.source ?? []).includes('sebra') && !(f.usedBy ?? []).includes('sebra'),
   );
   for (const d of cat.datasets) d.source = d.source.filter((s) => s !== 'sebra');
+  const activeSlugs = new Set(cat.datasets.map((d) => d.slug));
   for (const key of ['traps', 'methodology']) {
     const rows = cat[key];
     if (!Array.isArray(rows)) throw new Error(`Invalid catalog ${key}`);
     for (const row of rows) {
       if (Array.isArray(row.related))
-        row.related = row.related.filter((slug: string) => !slugs.has(slug));
+        row.related = row.related.filter((slug: string) => activeSlugs.has(slug));
       if (typeof row.text === 'string')
         row.text = row.text.replace(', плащанията по СЕБРА — в евро', '');
     }

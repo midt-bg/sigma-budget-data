@@ -1329,7 +1329,7 @@ export function catalog(ctx: Context): Check {
     'the 19 KFP reports of execution.json must be listed with the same checksums',
   );
   c.fact(
-    `${dss.length} datasets (${real} real, ${mock} mock, ${pend} pending) describe ${disk.length} files; ${fs.length} primary source files`,
+    `${dss.length} datasets (${real} real, ${mock} mock${'pending' in core ? `, ${pend} pending` : ''}) describe ${disk.length} files; ${fs.length} primary source files`,
   );
   return c;
 }
