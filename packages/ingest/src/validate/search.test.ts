@@ -17,6 +17,18 @@ beforeAll(() => {
 });
 afterAll(() => rmSync(presented, { recursive: true, force: true }));
 for (const test of cases) {
+  // The frozen corpus predates removal of pending dataset rows. Keep its
+  // independent findings and additionally require rejection of that status.
+  const expected =
+    test.name === 'dataset status'
+      ? {
+          ...test.expected,
+          problems: [
+            "row 845 'Рамка на КФП и макропрогноза 2024–2029': status 'pending'",
+            ...test.expected.problems,
+          ],
+        }
+      : test.expected;
   it(`SEARCH validation findings: ${test.name}`, () => {
     const ctx = new Context(presented);
     const original = ctx.text.bind(ctx);
@@ -46,10 +58,10 @@ for (const test of cases) {
     };
     try {
       const actual = JSON.parse(JSON.stringify(search(ctx)));
-      expect(actual).toEqual(test.expected);
+      expect(actual).toEqual(expected);
     } catch (e) {
-      if (!test.expected.crash) throw e;
-      expect(`${(e as Error).name}: ${(e as Error).message}`).toBe(test.expected.crash);
+      if (!expected.crash) throw e;
+      expect(`${(e as Error).name}: ${(e as Error).message}`).toBe(expected.crash);
     }
   });
 }

@@ -257,7 +257,7 @@ export function search(ctx: Context): Check {
         r[3].endsWith(' от БВП'),
       `${tag}: value ${pyRepr(r[3])}`,
     );
-    c.ok(['real', 'mock', 'pending'].includes(r[5]), `${tag}: status ${pyRepr(r[5])}`);
+    c.ok(['real', 'mock'].includes(r[5]), `${tag}: status ${pyRepr(r[5])}`);
     c.ok(
       r[6].startsWith('#/') && routes.match(r[6]) !== null,
       `${tag}: href ${pyRepr(r[6])} opens no screen`,
