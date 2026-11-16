@@ -85,3 +85,11 @@ it('revises the actual production source declaration without changing its eviden
   expect((revised.prb as any).note).toContain('към законопроекта');
   expect((sources.prb as any).note).toContain('съответстват');
 });
+
+it('has no unavailable dataset declarations or source descriptions', () => {
+  expect(authored.aggregation).not.toHaveProperty('pending');
+  expect(authored.aggregation.catalogGroups.some((group: any) => group.id === 'pending')).toBe(
+    false,
+  );
+  expect(JSON.stringify(authored.aggregation)).not.toMatch(/\bP0[247]\b/);
+});
