@@ -43,11 +43,13 @@ export function nameBudget2027(
       let matches = municipalities.filter((item) =>
         [item.name, item.lawName ?? ''].some((name) => nameKey(name) === nameKey(row.name)),
       );
+      const hadMatches = matches.length > 0;
       if (matches.length > 1)
         matches = matches.filter(
           (item) => nameKey(item.region) === nameKey(row.region.replace(/^ОБЛАСТ\s+/u, '')),
         );
-      if (matches.length > 1) throw new Error('Ambiguous municipality identity: ' + row.name);
+      if (hadMatches && matches.length !== 1)
+        throw new Error('Ambiguous municipality identity: ' + row.name);
       const name = matches[0] && municipalNames.get(matches[0].id);
       if (name) row.name = name;
       else row.nameNote = 'Няма запис в регистъра на общините; запазено е името от проекта.';
