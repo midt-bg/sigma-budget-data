@@ -240,7 +240,7 @@ export function validateRegistry(root: string, options: RegistryOptions = {}): R
     } catch {
       r.ok(
         false,
-        `Missing history for ${past.repository}; run: git fetch --filter=blob:none ${past.repository} main:${mainline}`,
+        `Missing history for ${past.repository}; run: git fetch --no-tags --filter=blob:none ${past.repository} main:${mainline}`,
       );
       return;
     }

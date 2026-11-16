@@ -196,9 +196,20 @@ it('names current TypeScript producers by path and retired ones by repository an
           })),
       ).errors,
     ).toEqual([]);
+    git(['update-ref', '-d', 'refs/remotes/origin/main']);
+    expect(edit(() => {}).errors).toEqual([]);
+    expect(
+      edit(
+        (s) =>
+          (s.intermediates[0].producer = past({
+            repository: 'https://github.com/midt-bg/sigma-budget-data',
+          })),
+      ).errors[0],
+    ).toContain('Missing history for https://github.com/midt-bg/sigma-budget-data');
+    git(['update-ref', 'refs/remotes/origin/main', commit]);
     git(['update-ref', '-d', 'refs/remotes/source/main']);
     expect(edit(() => {}).errors[0]).toContain(
-      'git fetch --filter=blob:none https://github.com/midt-bg/sigma-budget main:refs/remotes/source/main',
+      'git fetch --no-tags --filter=blob:none https://github.com/midt-bg/sigma-budget main:refs/remotes/source/main',
     );
     git(['update-ref', 'refs/remotes/source/main', commit]);
     for (const extra of [{ commit: '0'.repeat(40) }, { path: 'pipeline/missing.py' }]) {
