@@ -174,29 +174,3 @@ Skill-ът е в [`.claude/skills/budget-data/SKILL.md`](../.claude/skills/budge
   Резултатът от САЩ, 4.11.2026: всички отворени източници са `ok`. БНБ е нестабилна. minfin.bg дава `challenge`, data.egov.bg дава `forbidden`, а nra.bg дава `network`.
 
 Резултатът от България, 4.11.2026: всички отворени източници са `ok`, data.egov.bg също. nra.bg е `ok` с curl и `network` с urllib. minfin.bg пак дава `challenge`.
-
-## 11. Възстановяване на суровите файлове за сглобяване
-
-Сглобяването от чисто копие иска удостоверените оригинали и кешове от регистрирания CI архив, описан в `scripts/registered-node-inputs.json`. Получаването и подмяната му са описани в [изданията](release.md#входен-архив-за-ci). `ARCHIVE` по-долу е локалният файл на този архив; изходът трябва да е нова директория извън хранилището.
-
-```sh
-pnpm install --frozen-lockfile
-pnpm --filter @sigma-budget/ingest... build
-node scripts/restore-node-input-cache.mjs ARCHIVE /outside/new/inputs
-./budget build --commit HEAD --inputs /outside/new/inputs --out /outside/new/candidate --build-date 2026-11-16
-./budget validate --release /outside/new/candidate --inputs /outside/new/inputs
-```
-
-Архивът `release-build-inputs-2026-11-08-indirect-tax-sources.tar.gz` (SHA-256 `5f8e6a98b05919dc776fb68f40615a544b585e1a1690e29cf2f6f3b0e0648701`) е исторически и не замества регистрирания CI архив за текущия `HEAD`.
-
-Архивът съдържа `data/originals/` и `data/cache/`. Ръководството, речникът и замените на термините са замразени входове в `data/inputs`; произходът им е в `data/sources.yaml`. Изгубените оригинални текстове и старите записи за придобиване не са възстановени. Записът за АСБП описва взимането от PDF-а в хранилището, а не сваляне от издателя.
-
-Архивът от 08.11.2026 г. е надмножество на предишния: всички негови файлове са запазени без промяна и са добавени петте заковани файла на ЕК, ДВ, Агенция „Митници“ и НСИ за D26. Те остават извън Git. `acquisition: auto` включва точните им адреси в `./budget collect` и `./budget refetch`; ново сваляне не променя pin автоматично.
-
-### Снимки за националните сметки (08.11.2026)
-
-Историческият архив `release-build-inputs-2026-11-08-national-accounts.tar.gz` (SHA-256 `6e02341236a6d9ff4ce514825880edd0fc7933a3b4e7c99eefc185a0585e19f2`) запазва всички байтове от предишния архив и добавя парламентарния ZIP с вече закования хеш и двата текущи отговора `nama_10_a10_BG.json` и `nama_10_gdp_BG.json`. Те не заменят липсващите исторически отговори зад публикувания `gva-sectors`; разликите са в [отчета](reproducibility.md).
-
-`./budget collect --seed /path/to/restored-input-tree --out /outside/new/acquired` копира ръчните и историческите входове от възстановеното дърво и придобива всички автоматични източници, включително редуцираните GISCO и NUTS3 снимки. За отделно издание се използва нова празна директория; при повторно придобиване различните байтове се пазят с хешов суфикс, а build избира файла от snapshot.json. Всеки опит пази отделен непрезаписваем запис в `receipts/`; `snapshot.json` е атомарно обновяван указател с копие на последния запис. Неуспешен следващ опит запазва предишните хешове и дати в техния запис. `./budget build --commit HEAD --inputs /outside/new/acquired --out /outside/new/candidate --build-date 2026-11-10` чете само нея и входовете в Git. Ревизиран жив отговор изисква отделен преглед на pin; build спира при несъответствие. При същото издание се използват историческите живи снимки от архива.
-
-`source-drift.yml` придобива в временна директория всяка седмица. `--check-drift --summary report.md` връща неуспех при променени/незаковани или недостъпни отговори и пише таблица за job summary. Няма commit, artifact upload или deploy. `freshness.yml` е непроменен.

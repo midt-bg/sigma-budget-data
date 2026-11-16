@@ -25,20 +25,3 @@ Build експортира посочения commit и автентикира �
 ```
 
 За изолиран candidate се използва `budget build`, без ръчна последователност от readers. `budget validate` взима build датата от манифеста и възпроизвежда пакета с реалните числови проверки. Подробните договори и команди са в [production-typescript-import.md](production-typescript-import.md).
-
-## Избор за сайта
-
-`BUDGET_CANDIDATE` посочва корена на candidate, абсолютен или спрямо корена на репото. Vite проверява receipt/manifest идентичността, всеки output SHA-256 и размер, липсващи и нерегистрирани файлове и успешния пълен отчет. Числовите проверки се изпълняват в Node `build`/`validate`.
-
-Пакетът в `apps/web/build/client/data/` съдържа точно избраните данни и локални release метаданни. SSR и браузърът използват същото ID и assets, дори локалният D1/R2 регистър да сочи друго издание. Липсващ деклариран SSR asset е грешка; действително липсващ набор остава „предстои“. В този режим няма registry API/журнал; метаданните са от пакета. Без променливата се запазва обичайното поведение с `data/release/` и текущия регистър.
-
-## Задължително приемане
-
-```bash
-node scripts/node-import-acceptance.mjs /absolute/path/to/acquired-inputs /absolute/new/acceptance 2026-11-10
-node scripts/node-candidate-site-acceptance.mjs /absolute/new/acceptance/candidate /absolute/new/site-proof
-```
-
-Проверката включва реалните четци и всички правила, два build-а, API и default CLI възпроизвеждане, откази при повредени данни и сайта. Няма skip при липсващи оригинали. Издание, сглобено преди TypeScript обработката, се възпроизвежда чрез checkout на commit-а от `processing.code.commit` в манифеста и документацията на този commit.
-
-Историческите GVA/Eurostat, някои стари междинни и редакционни входове остават запазени с ограниченията в [reproducibility.md](reproducibility.md). Липсващият пълен програмен архив за 2027–2029 не се регенерира. Разликите между публикуваните vintages, sparse вариантът `billMc`, празните клетки и точните единици се запазват. Пълното изпълнение на правилата не удостоверява deployment, live refresh или възстановяване на липсващи исторически оригинали.

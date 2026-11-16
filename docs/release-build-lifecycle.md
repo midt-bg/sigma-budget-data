@@ -88,16 +88,6 @@ Each active dataset's declared output patterns must exist, every file must have 
 
 The current source graph's TypeScript `.js` imports may require offline compilation. That is an explicit parent adapter, not an implicit current-checkout fallback. A finite implementation should verify the supplied local dependency lock, bundle the exported entry and exported workspace modules into scratch using the already installed pinned compiler, resolve all workspace aliases to exported source, and reject unresolved/dynamic imports into the current checkout. Bound compilation time/output and run the bundle against the same context with no network. Record the committed entry/code snapshot and the actual runner/compiler hash through `bridgeSha256`; set `dependenciesRoot` for the verified lock. Never invoke install/build scripts that can fetch dependencies. The production adapter is `packages/ingest/src/production/compiler.ts`.
 
-## Package and reproduction
-
-All destinations must be new and disjoint from the complete repository checkout, acquired snapshot and optional dependency installation. This stronger restriction means a CLI candidate belongs outside the checkout, rather than in its `tmp/`. Existing components, broken symlinks, hardlinks and special files are rejected. Output names must satisfy the accepted Worker/client path contract. An executor cannot create manifest, validation, receipt, release pointer or undeclared output paths.
-
-The lifecycle creates canonical JSON, deterministic validation, a byte-derived manifest and a `node-release-build/1` receipt binding release ID, commit, executor, snapshot, validation hash and output inventory hash. The receipt's `built` is the explicit build date at UTC midnight, not a wall-clock execution timestamp. The manifest records the actual resolved commit/tree/export hash, entry hash, Node version, lock hash and explicit date. Same commit/date/snapshot/runtime/executor yields the same package bytes. PR47 `preflightRelease` runs on every staged input/output before a whole candidate directory is renamed into place. No partial PASS package is exposed on failure. Only new private work directories are removed; an existing candidate or arbitrary stale tree is never pruned.
-
-`reproduceRelease` requires a recorded Node executor identity and exact Node runtime, re-exports the recorded commit, reruns it with its recorded date and authenticated snapshot, and compares the complete manifest ID and every output byte hash. It checks the recorded package's output and receipt integrity as well. A differing replay is removed before installation. A release built before the TypeScript pipeline is reproduced by checking out `processing.code.commit` from its manifest and following the documentation at that commit.
-
-There is no ZIP/report/pointer writer in this scope. Candidate metadata is inside the new owned directory; operator results go to stdout. Existing web packaging is reused only after package verification. The parent must apply the same destination preflight to any later archive, report or site-copy destination; it must never point such a writer at an authenticated source, manifest or checkout path. The release-client default is 256 MiB; uploads over 16 MiB use multipart transfer.
-
 ## Standalone operator and checks
 
 ```sh
