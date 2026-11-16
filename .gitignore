@@ -1,15 +1,12 @@
 # Node (не е нужен за приложението, но може да се ползва за инструменти)
 node_modules/
 
-# Браузъри на Playwright и снимки от проверките
 tmp/pw-browsers/
 render-check/
 
-# Суровите данни не се качват (docs/data-sources.md)…
-data/originals/*
+# Входовете се включват по изрични правила; останалият кеш е локален.
+/data/originals/*
 data/raw/
-# …освен файловете на МФ (minfin.bg): 33-те месечни отчета по КФП, PDF-а с АСБП и материалите за бюджет 2027, около 13 MB. С тях всеки може да сглоби данните
-# от чисто копие. Останалите източници се свалят автоматично (packages/ingest/src/source-client/) и остават извън Git.
 !data/originals/budget_2027/
 !data/originals/kfp_2022/
 !data/originals/kfp_2023/
@@ -23,7 +20,7 @@ data/originals/asbp/*
 
 # Временни файлове и кешове
 tmp/
-data/cache/
+/data/cache/*
 .tmp/
 *.log
 .DS_Store
@@ -38,7 +35,6 @@ Thumbs.db
 !.dev.vars.example
 .secrets
 
-apps/etl/environments.local.json
 
 # Генерираният изход се игнорира само там, където инструментите го пишат. Голо име на папка (build/, dist/, coverage/) би скрило
 # и изходни папки със същото име, например packages/ingest/src/build/: нов файл там не би стигнал до Git. Пазачът е
@@ -53,8 +49,6 @@ apps/etl/environments.local.json
 /coverage-summary.md
 /dist/
 /build/
-.react-router/
-# Локалните бележки и разписките на операторските команди (apps/etl/src/release-operator.ts: work/ts-operator-receipts)
 /work/
 
 # Turbo task cache (в корена и във всеки workspace)
@@ -67,16 +61,10 @@ apps/etl/environments.local.json
 !data/originals/debt/
 !data/originals/debt-issues-acquisition.json
 
-
-# Exact authenticated release inputs
-!/data/cache/
-/data/cache/*
-!/data/originals/
-/data/originals/*
+# Точните 82 удостоверени входа на внесеното издание.
 !/data/cache/research/
 /data/cache/research/*
 !/data/originals/asbp/
-/data/originals/asbp/*
 !/data/originals/bnb_sdmx/
 /data/originals/bnb_sdmx/*
 !/data/originals/dv/
@@ -95,9 +83,22 @@ apps/etl/environments.local.json
 /data/originals/parliament/*
 !/data/originals/program_budgets/
 /data/originals/program_budgets/*
+!/data/originals/sebra/
+/data/originals/sebra/*
 !/data/cache/research/dbp-2027/
 /data/cache/research/dbp-2027/*
+!/data/cache/research/mf-umtbf-2026-2028/
+/data/cache/research/mf-umtbf-2026-2028/*
+!/data/cache/research/mf-umtbf-2026-2028/extracts/
+/data/cache/research/mf-umtbf-2026-2028/extracts/*
+!/data/cache/eurostat_pop_nuts3_bg.json
+!/data/cache/gisco_lau_bg.json
+!/data/cache/law_bill.json
 !/data/cache/research/dbp-2027/dbp2027_figures.json
+!/data/cache/research/mf-umtbf-2026-2028/extracts/pdf_pages_clean.json
+!/data/cache/sebra_27.08.2026.xlsx
+!/data/cache/sebra_28.08.2026.xlsx
+!/data/originals/MANIFEST.json
 !/data/originals/asbp/UMTBF-2026-2028-motivi.source.json
 !/data/originals/asbp/asbp_tables.json
 !/data/originals/bnb_sdmx/cgd.xml
@@ -170,3 +171,5 @@ apps/etl/environments.local.json
 !/data/originals/program_budgets/8400_ДФЗ.pdf
 !/data/originals/program_budgets/8500_НБКСРС.pdf
 !/data/originals/program_budgets/8600_ДАТО.pdf
+!/data/originals/sebra/midt_sebra_2026_page.html
+!/data/originals/sebra/midt_sebra_31.08.2026.xlsx
