@@ -19,7 +19,7 @@ test('one Node suite command and explicit validation barrier', () => {
   for (const job of jobs) assert.ok(deps.includes(job), `missing gate ${job}`);
   assert.match(workflow, /if: \$\{\{ always\(\) \}\}[\s\S]*Every validation must succeed/);
 });
-test('all retained provenance and browser commands stay in CI', () => {
+test('all retained provenance commands stay in CI', () => {
   const evidence = JSON.parse(readFileSync('scripts/ci-provenance-commands.json', 'utf8'));
   for (const [path, commands] of Object.entries(evidence)) {
     const raw = readFileSync(path, 'utf8')
@@ -59,4 +59,56 @@ test('coverage CI checks the target baseline with history and env refs before ru
     COVERAGE_BASE_SHA: '${{ github.event.before }}',
   });
   assert.ok(gate < job.steps.findIndex((step) => step.run === 'pnpm test -- --coverage'));
+});
+
+test('committed release checks use Node with repository inputs', () => {
+  const { parse } = createRequire(new URL('../packages/ingest/package.json', import.meta.url))(
+    'yaml',
+  );
+  const jobs = parse(workflow).jobs;
+  const steps = jobs.check.steps;
+  const compile = steps.findIndex(
+    (step) => step.run === 'pnpm --filter @sigma-budget/etl... build',
+  );
+  const validate = steps.findIndex((step) => step.run === './budget check-site --inputs .');
+  assert.ok(compile >= 0 && validate > compile);
+  assert.equal(steps[validate].if, undefined);
+  assert.ok(!steps[validate]['continue-on-error']);
+  assert.ok(jobs.reproduce.steps.some((step) => step.run === 'node scripts/reproduce-current.mjs'));
+});
+
+test('check job checks the registries with the full history, so the historical producers are looked up', () => {
+  const { parse } = createRequire(new URL('../packages/ingest/package.json', import.meta.url))(
+    'yaml',
+  );
+  const job = parse(workflow).jobs.check;
+  const checkout = job.steps.find((step) => step.uses?.startsWith('actions/checkout@'));
+  assert.equal(checkout.with['fetch-depth'], 0);
+  const built = job.steps.findIndex(
+    (step) => step.run === 'pnpm --filter @sigma-budget/etl... build',
+  );
+  const check = job.steps.findIndex((step) =>
+    step.run?.includes('node packages/ingest/dist/validate/cli.js --live --only REGISTRY'),
+  );
+  assert.ok(built >= 0 && check > built);
+  const run = job.steps[check].run;
+  // a skipped lookup fails the step, and so does a failing validator
+  assert.match(
+    run,
+    /if grep -q 'verification skipped' "\$RUNNER_TEMP\/registry\.json"; then\n(?:.*\n)*?\s*exit 1\n\s*fi/,
+  );
+  assert.match(run, /\|\| status=\$\?\n/);
+  assert.match(run, /\nexit "\$status"\n?$/);
+});
+
+test('security covers other PR targets without duplicating main PR checks', () => {
+  const { parse } = createRequire(new URL('../packages/ingest/package.json', import.meta.url))(
+    'yaml',
+  );
+  const data = parse(workflow);
+  const security = parse(readFileSync('.github/workflows/security.yml', 'utf8'));
+  assert.deepEqual(data.on.pull_request.branches, ['main']);
+  assert.deepEqual(security.on.pull_request, { 'branches-ignore': ['main'] });
+  assert.ok(Object.hasOwn(security.on, 'workflow_call'));
+  assert.deepEqual(Object.keys(security.jobs).sort(), ['dependencies-and-secrets', 'semgrep']);
 });
