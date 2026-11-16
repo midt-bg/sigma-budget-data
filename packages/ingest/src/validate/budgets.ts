@@ -233,11 +233,11 @@ export function budgets(ctx: Context): Check {
       pyIterAt(mm, 'source').every((s: any) => pyHas(required<any>(core, 'sources'), s)),
     'meta asOf/source',
   );
-  const pending =
+  const corePending =
     supplement.budgets === 4 && !('pending' in core) ? [] : required<any>(core, 'pending');
   c.ok(
-    (Array.isArray(pending)
-      ? pending
+    (Array.isArray(corePending)
+      ? corePending
       : pyDictKeysAt(core, 'pending').map((k) => pyItem(required<any>(core, 'pending'), k))
     ).some((p: any) => required<any>(p, 'id') === 'P03') ===
       (supplement.budgets !== 4),
