@@ -1,4 +1,4 @@
-/** Node-only client for the existing budget-release/1 Worker protocol. */
+/** Offline budget-release/1 package contracts and bounded public reads. */
 export type ExitCode = 2 | 3 | 4 | 5 | 6;
 export class ReleaseError extends Error {
   constructor(
@@ -27,7 +27,7 @@ export interface ReleaseManifest {
   [key: string]: unknown;
 }
 export interface ReleaseEnvironment {
-  /** Explicit logical name and one origin for every public and admin request. */
+  /** Explicit logical name and origin for public release reads. */
   name: string;
   url: string;
 }
@@ -48,17 +48,14 @@ export type HttpTransport = (request: HttpRequest) => Promise<HttpResponse>;
 export interface PackageOptions {
   release: string;
   originals: string;
-  /** Match the intended environment. Does not change any Worker setting. */
+  /** Maximum permitted size of each package object. */
   maxObjectBytes?: number;
 }
 export const SHA256 = /^[0-9a-f]{64}$/;
 export const MANIFEST_LIMIT = 4 * 1024 * 1024;
 export const DEFAULT_OBJECT_LIMIT = 256 * 1024 * 1024;
-/** R2 multipart: every part but the last has at least 5 MiB, so a server's part_bytes is never smaller */
 export const record = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value);
-export const revision = (value: unknown): value is number =>
-  Number.isSafeInteger(value) && Number(value) >= 0;
 export function parseJson(bytes: Uint8Array): unknown {
   try {
     return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));

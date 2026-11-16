@@ -38,7 +38,7 @@ export async function getBytes(
     throw new ReleaseError(3, 'Release object unavailable or oversized');
   return Buffer.from(response.body);
 }
-/** Existing Worker current protocol, with the documented static-site fallback. */
+/** Public current-release pointer, with the documented static release fallback. */
 export async function locateManifest(
   selection: { manifest?: string; current?: string },
   transport?: HttpTransport,
