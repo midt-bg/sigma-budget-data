@@ -233,7 +233,7 @@ function resolveBudgetMetadata(value: unknown): unknown {
     Object.entries(value).map(([key, entry]) => [
       key,
       key === 'meta' && entry && typeof entry === 'object' && Array.isArray((entry as any).pending)
-        ? Object.fromEntries(Object.entries(entry).filter(([field]) => field !== 'pending'))
+        ? { ...entry, pending: [] }
         : resolveBudgetMetadata(entry),
     ]),
   );
