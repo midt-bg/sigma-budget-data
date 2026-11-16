@@ -35,8 +35,8 @@ export function shape<S extends Record<string, Guard<unknown>>>(
   );
 }
 export const strings: Guard<string[]> = (v): v is string[] => Array.isArray(v) && v.every(string);
-export const status: Guard<'real' | 'mock' | 'pending'> = (v): v is 'real' | 'mock' | 'pending' =>
-  v === 'real' || v === 'mock' || v === 'pending';
+export const status: Guard<'real' | 'mock'> = (v): v is 'real' | 'mock' =>
+  v === 'real' || v === 'mock';
 Object.assign(string, { schema: { type: 'string' } });
 Object.assign(number, { schema: { type: 'number' } });
 Object.assign(boolean, { schema: { type: 'boolean' } });
@@ -44,7 +44,7 @@ Object.assign(json, { schema: {} });
 Object.assign(record, { schema: { type: 'object' } });
 Object.assign(array, { schema: { type: 'array' } });
 Object.assign(strings, { schema: { type: 'array', items: { type: 'string' } } });
-Object.assign(status, { schema: { enum: ['real', 'mock', 'pending'] } });
+Object.assign(status, { schema: { enum: ['real', 'mock'] } });
 export const metaGuard = shape({
   id: string,
   title: string,
