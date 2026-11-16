@@ -1,3 +1,4 @@
+import { nameBudget2027 } from './budget-names.js';
 import { fiscalStages, type FiscalGraphInput } from './fiscal-graph.js';
 import { runGraph, type GraphStage } from './graph.js';
 import { buildBudgets } from './budgets.js';
@@ -131,7 +132,23 @@ export function wave13bStages(input: Wave13bInput): GraphStage[] {
       requires: [],
       run: () => buildBudgetPlan(input.plan.figures, input.plan.editorial, input.plan.pdfSha256),
     },
-    ...fiscal,
+    ...fiscal.map((stage) =>
+      stage.id !== 'budget-2027'
+        ? stage
+        : {
+            ...stage,
+            requires: [...stage.requires, 'budgets', 'municipalities'],
+            run: (read: Read) => {
+              const output = stage.run(read) as { budget: Record<string, any> };
+              nameBudget2027(
+                output.budget,
+                read('budgets')['ministries.json'].items,
+                read('municipalities').municipalities.items,
+              );
+              return output;
+            },
+          },
+    ),
     { id: 'budgets', requires: [], run: () => buildBudgets(input.programmes, date) },
     {
       id: 'debt',

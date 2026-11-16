@@ -179,7 +179,8 @@ export function programmeNotes(source: ProgrammeSource) {
     let target: string;
     if (bits[0] === 'row') {
       const row = source.rows[Number(bits[1])]!;
-      target = `„${row.name}“ (${row.printedCode}), ${columnNames[Number(bits[3])]}`;
+      const code = row.kind === 'total' ? '' : ` (${row.printedCode})`;
+      target = `„${row.name}“${code}, ${columnNames[Number(bits[3])]}`;
     } else if (bits[0] === 'policy')
       target = `сбор на програмите в ${bits[1]}, ${columnNames[Number(bits[2])]}`;
     else if (bits[0] === 'total')

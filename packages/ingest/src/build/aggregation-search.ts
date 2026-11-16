@@ -316,7 +316,7 @@ const homoglyphs: Record<string, string> = Object.fromEntries(
     Array.from('АВСЕНКМОРТХУавсенкмортху')[i]!,
   ]),
 );
-const nameKey = (s: string) => {
+export const nameKey = (s: string) => {
   const v = norm(Array.from(s, (c) => homoglyphs[c] ?? c).join(''));
   const aliases: Record<string, string> = {
     добричка: 'добрич селска',

@@ -128,3 +128,19 @@ it('reports a failed producer and skips its dependants while independent stages 
   });
   expect(update.outputs.has('publication-layers')).toBe(false);
 });
+
+it('publishes official 2027 names and explicitly identifies the unregistered commission', () => {
+  const budget = (result.outputs.get('budget-2027') as any).budget;
+  const ministries = (result.outputs.get('budgets') as any)['ministries.json'].items;
+  for (const variant of Object.values(budget.budgets) as any[]) {
+    for (const ministry of ministries) {
+      const article = ministry.art + (ministry.art >= 32 ? 1 : 0);
+      expect(variant[article].name).toBe(ministry.name);
+    }
+    expect(variant['32'].nameNote).toContain('Няма запис');
+  }
+  for (const rows of Object.values(budget.municipal) as any[][]) {
+    expect(rows.find((row) => row.name === 'Столична община')).toBeDefined();
+    expect(rows.filter((row) => row.nameNote)).toEqual([]);
+  }
+});

@@ -190,3 +190,12 @@ it('binds each supplemental contract to its own published filename', () => {
     for (const other of supplementaryProgrammeCodes)
       expect(isPublishedDataset(`ministries/${code}.json`, example(other))).toBe(code === other);
 });
+
+it('keeps internal total keys out of every visible programme note', () => {
+  const notes = supplementaryProgrammeCodes.flatMap((code) =>
+    programmeNotes(programmeReferences[code]!),
+  );
+  expect(notes.some((note) => note.includes('„Общо разходи“, ведомствени разходи'))).toBe(true);
+  expect(notes.filter((note) => /\(total\)/u.test(note))).toEqual([]);
+  expect(notes.some((note) => /\(\d{4}/u.test(note))).toBe(true);
+});
