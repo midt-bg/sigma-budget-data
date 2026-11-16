@@ -45,6 +45,7 @@ const CODE_PATH =
 const HISTORY_PATH = /^(?:[A-Za-z0-9_][A-Za-z0-9_.-]*\/)*[A-Za-z0-9_][A-Za-z0-9_.-]*$/;
 /** The history the commits of historical producers are looked up in: a commit of another repository cannot be checked here. */
 const REPOSITORY = 'https://github.com/midt-bg/sigma-budget';
+const DATA_REPOSITORY = 'https://github.com/midt-bg/sigma-budget-data';
 const COMMIT = /^[0-9a-f]{40}$/;
 /** A producer, parser or layer is a TypeScript (or JavaScript) module of this repository: an exact
  * repository-relative path under packages/ or apps/, never a command, a test, built output or a path
@@ -88,7 +89,7 @@ export function historicalProducer(entry: unknown): HistoricalProducer | null {
       `a historical producer has exactly repository, commit and path: ${JSON.stringify(entry)}`,
     );
   const { repository, commit, path } = value;
-  if (repository !== REPOSITORY)
+  if (repository !== REPOSITORY && repository !== DATA_REPOSITORY)
     throw new Error(`unsafe historical producer repository: ${String(repository)}`);
   if (typeof commit !== 'string' || !COMMIT.test(commit))
     throw new Error(`a historical producer names a full commit: ${String(commit)}`);
@@ -205,7 +206,6 @@ export function validateRegistry(root: string, options: RegistryOptions = {}): R
   let history: 'full' | 'skipped' | 'failed' | undefined;
   // the branch every historical commit must be part of: a commit that exists only as a loose object or on a branch that is later
   // squashed away is not history. Without the remote branch (a clone of another layout, a test repository) the checked-out history counts.
-  let mainline = 'HEAD';
   const verified = new Map<string, string>();
   const git = (args: string[]) =>
     execFileSync('git', ['--no-replace-objects', ...args], {
@@ -225,12 +225,6 @@ export function validateRegistry(root: string, options: RegistryOptions = {}): R
           const shallow = git(['rev-parse', '--is-shallow-repository']);
           if (shallow !== 'true' && shallow !== 'false') throw new Error('unknown Git history');
           history = shallow === 'true' ? 'skipped' : 'full';
-          try {
-            git(['rev-parse', '--verify', '--quiet', 'refs/remotes/origin/main^{commit}']);
-            mainline = 'refs/remotes/origin/main';
-          } catch {
-            mainline = 'HEAD';
-          }
           if (history === 'skipped')
             notes.push('Historical producer commit/path verification skipped: shallow checkout');
         } catch {
@@ -240,8 +234,20 @@ export function validateRegistry(root: string, options: RegistryOptions = {}): R
       }
     }
     if (history !== 'full') return;
+    const mainline =
+      past.repository === REPOSITORY ? 'refs/remotes/source/main' : 'refs/remotes/origin/main';
+    try {
+      git(['rev-parse', '--verify', `${mainline}^{commit}`]);
+    } catch {
+      r.ok(
+        false,
+        `Missing history for ${past.repository}; run: git fetch --filter=blob:none ${past.repository} main:${mainline}`,
+      );
+      return;
+    }
     const ref = `${past.commit}:${past.path}`;
-    if (!verified.has(ref)) {
+    const key = `${past.repository}:${ref}`;
+    if (!verified.has(key)) {
       let problem = `historical producer commit/path does not exist: ${ref}`;
       try {
         git(['cat-file', '-e', `${past.commit}^{commit}`]);
@@ -253,9 +259,9 @@ export function validateRegistry(root: string, options: RegistryOptions = {}): R
       } catch {
         // the problem named before the failing step stands
       }
-      verified.set(ref, problem);
+      verified.set(key, problem);
     }
-    r.ok(!verified.get(ref), verified.get(ref) ?? '');
+    r.ok(!verified.get(key), verified.get(key) ?? '');
   };
   const ids = sources.map((s) => s.id),
     ipaths = inter.map((i) => i.path),

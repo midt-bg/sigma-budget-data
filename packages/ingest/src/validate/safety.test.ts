@@ -162,6 +162,8 @@ it('names current TypeScript producers by path and retired ones by repository an
       'test fixture',
     ]);
     commit = git(['rev-parse', 'HEAD']);
+    git(['update-ref', 'refs/remotes/source/main', commit]);
+    git(['update-ref', 'refs/remotes/origin/main', commit]);
     rmSync(join(root, historicalPath));
     make(root, 'data/inputs/frozen.json', '{}\n');
     const opts = { trackedPaths: ['apps/example/src/producer.ts'] };
@@ -186,6 +188,19 @@ it('names current TypeScript producers by path and retired ones by repository an
     };
     expect(edit(() => {}).errors).toEqual([]);
     expect(edit(() => {}).notes).toBeUndefined();
+    expect(
+      edit(
+        (s) =>
+          (s.intermediates[0].producer = past({
+            repository: 'https://github.com/midt-bg/sigma-budget-data',
+          })),
+      ).errors,
+    ).toEqual([]);
+    git(['update-ref', '-d', 'refs/remotes/source/main']);
+    expect(edit(() => {}).errors[0]).toContain(
+      'git fetch --filter=blob:none https://github.com/midt-bg/sigma-budget main:refs/remotes/source/main',
+    );
+    git(['update-ref', 'refs/remotes/source/main', commit]);
     for (const extra of [{ commit: '0'.repeat(40) }, { path: 'pipeline/missing.py' }]) {
       const producer = past(extra);
       for (const owner of ['intermediate', 'dataset']) {
@@ -210,7 +225,7 @@ it('names current TypeScript producers by path and retired ones by repository an
       'not on a branch',
     ]);
     expect(edit((s) => (s.intermediates[0].producer = past({ commit: loose }))).errors).toEqual([
-      `historical producer commit is not in the history of HEAD: ${loose}`,
+      `historical producer commit is not in the history of refs/remotes/source/main: ${loose}`,
     ]);
     expect(
       edit((s) => (s.sources[0].parser = 'apps/example/src/producer.ts, apps/example/src/gone.ts'))
