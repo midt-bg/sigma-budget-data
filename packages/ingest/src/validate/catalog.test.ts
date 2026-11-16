@@ -53,7 +53,7 @@ const cases: any[] = [
     ...load('source-strings/oracle.json'),
   };
 function mutate(root: string, op: any) {
-  const p = join(root, op.file);
+  const p = join(root, fixturePath(op.file));
   mkdirSync(dirname(p), { recursive: true });
   if (op.op === 'deleteFile') unlinkSync(p);
   else if (op.op === 'write') writeFileSync(p, op.value);
