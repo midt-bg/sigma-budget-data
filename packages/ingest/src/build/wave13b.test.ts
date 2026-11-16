@@ -129,18 +129,16 @@ it('reports a failed producer and skips its dependants while independent stages 
   expect(update.outputs.has('publication-layers')).toBe(false);
 });
 
-it('publishes official 2027 names and explicitly identifies the unregistered commission', () => {
+it('publishes concrete official names from the name lists', () => {
   const budget = (result.outputs.get('budget-2027') as any).budget;
-  const ministries = (result.outputs.get('budgets') as any)['ministries.json'].items;
-  for (const variant of Object.values(budget.budgets) as any[]) {
-    for (const ministry of ministries) {
-      const article = ministry.art + (ministry.art >= 32 ? 1 : 0);
-      if (variant[article]) expect(variant[article].name).toBe(ministry.name);
-    }
-    if (variant['32']) expect(variant['32'].nameNote).toContain('Няма запис');
-  }
+  expect(budget.budgets.bill['12'].name).toBe('Министерство на вътрешните работи');
+  expect(budget.budgets.bill['33'].name).toBe('Национална служба за охрана');
+  expect(budget.budgets.bill['32'].name).toBe('Комисия за противодействие на корупцията');
+  expect(budget.budgets.bill['32']).not.toHaveProperty('nameNote');
+  expect(budget.budgets.billMc['2'].name).toBe('Съдебна власт');
   for (const rows of Object.values(budget.municipal) as any[][]) {
     expect(rows.find((row) => row.name === 'Столична община')).toBeDefined();
+    expect(rows.find((row) => row.name === 'Добричка')).toBeDefined();
     expect(rows.filter((row) => row.nameNote)).toEqual([]);
   }
 });

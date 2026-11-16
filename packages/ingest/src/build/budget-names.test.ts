@@ -10,7 +10,8 @@ it('uses codes for both bill variants, handles the inserted article and reports 
   const variant = () => ({
     '1': { name: 'Държавен бюджет' },
     '12': { name: 'Министерството на вътрешните работи', rows: [{ value: 123 }] },
-    '32': { name: 'Орган без запис' },
+    '32': { name: 'Комисията за противодействие на корупцията' },
+    '99': { name: 'Орган без запис' },
     '33': { name: 'Националната служба за охрана' },
   });
   const budget = { budgets: { bill: variant(), billMc: variant() }, municipal: {} };
@@ -19,7 +20,9 @@ it('uses codes for both bill variants, handles the inserted article and reports 
     expect(items['12'].name).toBe(ministries[0]!.name);
     expect(items['12'].rows).toEqual([{ value: 123 }]);
     expect(items['33'].name).toBe(ministries[1]!.name);
-    expect(items['32']).toMatchObject({
+    expect(items['32'].name).toBe('Комисия за противодействие на корупцията');
+    expect(items['32']).not.toHaveProperty('nameNote');
+    expect(items['99']).toMatchObject({
       name: 'Орган без запис',
       nameNote: expect.stringContaining('Няма запис'),
     });
@@ -29,12 +32,14 @@ it('uses codes for both bill variants, handles the inserted article and reports 
 it('resolves municipal aliases and duplicate names by region, preserving cells', () => {
   const municipalities = [
     { id: 'SOF46', name: 'Столична', lawName: 'СТОЛИЧНА ОБЩИНА', region: 'София (столица)' },
+    { id: 'DOB15', name: 'Добрич-селска', lawName: 'Добричка', region: 'Добрич' },
     { id: 'AAA01', name: 'Тест', region: 'Първа' },
     { id: 'BBB01', name: 'Тест', region: 'Втора' },
   ];
   const rows = () => [
     { name: 'Столична община', region: 'ОБЛАСТ СОФИЯ (СТОЛИЦА)', cells: [{ value: 123 }] },
     { name: 'Тест', region: 'ОБЛАСТ ВТОРА', cells: [] },
+    { name: 'Добричка', region: 'ОБЛАСТ ДОБРИЧ', cells: [] },
     { name: 'Липсваща', region: 'ОБЛАСТ ПЪРВА', cells: [] },
   ];
   const budget = { budgets: {}, municipal: { art52: rows(), art53: rows() } };
@@ -46,7 +51,8 @@ it('resolves municipal aliases and duplicate names by region, preserving cells',
       cells: [{ value: 123 }],
     });
     expect(items[1]!.name).toBe('Тест');
-    expect(items[2]).toHaveProperty('nameNote');
+    expect(items[2]!.name).toBe('Добричка');
+    expect(items[3]).toHaveProperty('nameNote');
   }
   expect(() =>
     nameBudget2027(

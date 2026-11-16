@@ -1,3 +1,4 @@
+import officialNames from './budget-names.json' with { type: 'json' };
 import { nameKey } from './aggregation-search.js';
 
 interface MinistryIdentity {
@@ -25,14 +26,15 @@ export function nameBudget2027(
 ): void {
   const codes = budget2027Codes(ministries);
   const ministryNames = new Map(ministries.map((item) => [item.id, item.name]));
-  // Full municipal name already used in the municipal transfers name list.
+  const municipalOverrides: Record<string, string> = officialNames.municipalitiesByCode;
+  const articleNames: Record<string, string> = officialNames.institutionsByArticle;
   const municipalNames = new Map(
-    municipalities.map((item) => [item.id, item.id === 'SOF46' ? 'Столична община' : item.name]),
+    municipalities.map((item) => [item.id, municipalOverrides[item.id] ?? item.name]),
   );
   for (const variant of Object.values(budget.budgets) as Record<string, any>[])
     for (const [article, item] of Object.entries(variant)) {
       if (article === '1') continue; // State budget, not a first-level entity.
-      const name = ministryNames.get(codes[article]!);
+      const name = articleNames[article] ?? ministryNames.get(codes[article]!);
       if (name) item.name = name;
       else
         item.nameNote =
