@@ -4,6 +4,7 @@ import { dirname, join, resolve } from 'node:path';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { AnnualLineage, type BillExtraction, type Extraction } from '../build/annual-lineage.js';
 import { buildAnnualPeriods } from '../build/fiscal-annual.js';
+import { nameBudget2027 } from '../build/budget-names.js';
 import { buildBudget2027 } from '../build/budget-2027.js';
 import { parsePythonJson } from '../common/numbers.js';
 import { budget2027 } from './budget-2027.js';
@@ -413,3 +414,28 @@ it('rejects a float-encoded project count', () => {
     copy('fiscal/inputs/data/inputs/budget_bill_2027.json', 'data/inputs/budget_bill_2027.json');
   }
 });
+
+it('validates registry names exactly and rejects a changed display name', () => {
+  const ministries = [{ id: '1300', art: 12, name: 'Министерство на вътрешните работи' }];
+  const file = join(root, 'data/release/budget2027.json');
+  const original = readFileSync(file, 'utf8');
+  const named = JSON.parse(original);
+  nameBudget2027(named, ministries, []);
+  writeFileSync(join(root, 'data/release/ministries.json'), JSON.stringify({ items: ministries }));
+  writeFileSync(join(root, 'data/release/municipalities.json'), JSON.stringify({ items: [] }));
+  const run = () =>
+    runGroups([{ name: 'BUDGET2027', description: '', run: budget2027 }], new Context(root), [
+      'BUDGET2027',
+    ]).groups[0]!;
+  try {
+    writeFileSync(file, JSON.stringify(named));
+    expect(run().problems).toEqual([]);
+    named.budgets.bill['12'].name = 'Неправилно име';
+    writeFileSync(file, JSON.stringify(named));
+    expect(run().problems).toContain('bill: exact source variants, periods, units and coverage');
+  } finally {
+    writeFileSync(file, original);
+    rmSync(join(root, 'data/release/ministries.json'));
+    rmSync(join(root, 'data/release/municipalities.json'));
+  }
+}, 30_000);
