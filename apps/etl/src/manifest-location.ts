@@ -1,4 +1,3 @@
-import type { ReleaseEnvironment } from '@sigma-budget/ingest/release-package';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { join, dirname, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -24,7 +23,7 @@ export async function getBytes(
   limit = 67108864,
 ): Promise<Buffer> {
   const parsed = new URL(url);
-  releaseEnvironment({ name: 'explicit-source', url: parsed.origin });
+  validateReleaseOrigin(new URL(parsed.origin));
   if (parsed.username || parsed.password || parsed.hash)
     throw new ReleaseError(2, 'Invalid explicit release URL');
   const response = await transport({
@@ -49,7 +48,7 @@ export async function locateManifest(
     expected: string | undefined;
   if (selection.current) {
     const site = new URL(selection.current);
-    releaseEnvironment({ name: 'explicit-current', url: site.href });
+    validateReleaseOrigin(site);
     let pointer;
     try {
       pointer = JSON.parse(
@@ -123,15 +122,8 @@ export async function materializeRemote(
   return root;
 }
 
-export function releaseEnvironment(input: ReleaseEnvironment): Readonly<ReleaseEnvironment> {
-  let url: URL;
-  try {
-    url = new URL(input.url);
-  } catch {
-    throw new ReleaseError(2, 'An explicit environment origin is required');
-  }
+function validateReleaseOrigin(url: URL): void {
   if (
-    !/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(input.name) ||
     url.username ||
     url.password ||
     url.search ||
@@ -140,11 +132,7 @@ export function releaseEnvironment(input: ReleaseEnvironment): Readonly<ReleaseE
     (url.protocol !== 'https:' &&
       !(url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)))
   )
-    throw new ReleaseError(
-      2,
-      'Environment requires a name and HTTPS origin (HTTP only on loopback)',
-    );
-  return Object.freeze({ name: input.name, url: url.origin });
+    throw new ReleaseError(2, 'Release reads require an HTTPS origin (HTTP only on loopback)');
 }
 
 /** Redirects are never followed, including on public requests. Bounds decoded response bytes. */
@@ -153,7 +141,6 @@ export const nodeHttpTransport: HttpTransport = async (request) => {
     const response = await fetch(request.url, {
       method: request.method,
       headers: { ...request.headers },
-      body: request.body ? Buffer.from(request.body) : undefined,
       redirect: 'manual',
       signal: AbortSignal.timeout(request.timeoutMs),
     });

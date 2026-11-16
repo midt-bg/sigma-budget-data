@@ -26,16 +26,10 @@ export interface ReleaseManifest {
   outputs: ReleaseFile[];
   [key: string]: unknown;
 }
-export interface ReleaseEnvironment {
-  /** Explicit logical name and origin for public release reads. */
-  name: string;
-  url: string;
-}
 export interface HttpRequest {
-  method: 'GET' | 'POST' | 'PUT';
+  method: 'GET';
   url: string;
   headers: Readonly<Record<string, string>>;
-  body?: Uint8Array;
   timeoutMs: number;
   maxResponseBytes: number;
 }

@@ -1,14 +1,4 @@
-import {
-  readFile,
-  writeFile,
-  mkdir,
-  mkdtemp,
-  rm,
-  cp,
-  lstat,
-  rename,
-  readdir,
-} from 'node:fs/promises';
+import { readFile, writeFile, mkdir, mkdtemp, rm, cp, rename, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -54,9 +44,8 @@ export const PRODUCTION_USAGE = `Usage: budget <command> [options] (alias: budge
   prepare --inputs SNAPSHOT --out NEW_DIRECTORY --build-date YYYY-MM-DD [--programme-source archive|extracted]
   freshness (existing options)
   --root defaults to this checkout of the repository, whatever the current folder; --json emits machine-readable results.
-  Release operator receipts go to <root>/work/ts-operator-receipts unless --receipts names another directory.
 New production builds are offline Node and require an explicit date. ./budget and budget-ts use this Node dispatcher.
-No restore subcommand: use the existing documented restore procedure/protocol.`;
+No restore subcommand.`;
 export interface ProductionCliDependencies {
   root?: string;
   write?: (s: string) => void;
@@ -72,7 +61,6 @@ const boolean = new Set([
   '--check-drift',
   '--replace',
   '--dry-run',
-  '--yes',
 ]);
 function flags(args: string[]) {
   const m = new Map<string, string>();
@@ -235,9 +223,7 @@ export async function productionCli(
       return 0;
     }
     if (command === 'build') {
-      allowed(['--commit', '--inputs', '--out', '--build-date', '--env', '--site']);
-      if (m.has('--env') && !['node', 'local'].includes(required('--env')))
-        throw new ReleaseError(2, 'New builds require the locked local Node runtime');
+      allowed(['--commit', '--inputs', '--out', '--build-date', '--site']);
       const result = await buildRelease({
         repositoryRoot: root,
         commit: get('--commit', 'HEAD')!,
