@@ -1,6 +1,6 @@
 name: security
 on:
-  # main PRs use the site caller; other targets still receive the full security suite.
+  # Main validation calls this workflow; other targets receive the same checks.
   pull_request:
     branches-ignore: [main]
   workflow_call:

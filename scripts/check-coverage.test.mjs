@@ -6,9 +6,9 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { checkCoverage, compareBaselines, raisedBaseline } from './check-coverage.mjs';
-const baseline = { tolerance: 0.5, workspaces: { 'apps/web': { lines: 80, branches: 70 } } };
+const baseline = { tolerance: 0.5, workspaces: { 'apps/etl': { lines: 80, branches: 70 } } };
 const reports = (pct) => ({
-  'apps/web': {
+  'apps/etl': {
     total: Object.fromEntries(
       ['lines', 'branches', 'functions', 'statements'].map((m) => [m, { pct }]),
     ),
@@ -22,7 +22,7 @@ test('boundary passes; regression and missing reports fail', () => {
 });
 test('reviewed exceptions are scoped, bounded and expire', () => {
   const e = {
-    workspace: 'apps/web',
+    workspace: 'apps/etl',
     metric: 'lines',
     minimum: 75,
     reason: 'Reviewed migration',
@@ -50,7 +50,7 @@ test('the documented tolerance cannot be silently widened', () => {
 
 const script = fileURLToPath(new URL('./check-coverage.mjs', import.meta.url));
 const exception = {
-  workspace: 'apps/web',
+  workspace: 'apps/etl',
   metric: 'lines',
   minimum: 75,
   reason: 'Reviewed production scope change',
@@ -64,12 +64,12 @@ function fixture(t) {
     rmSync(root, { recursive: true, force: true });
   });
   const write = (path, value) => writeFileSync(join(root, path), JSON.stringify(value) + '\n');
-  mkdirSync(join(root, 'apps/web/coverage'), { recursive: true });
+  mkdirSync(join(root, 'apps/etl/coverage'), { recursive: true });
   mkdirSync(join(root, 'packages'));
-  write('apps/web/package.json', { scripts: { test: 'vitest run' } });
+  write('apps/etl/package.json', { scripts: { test: 'vitest run' } });
   write('coverage-baseline.json', baseline);
   write('coverage-exceptions.json', []);
-  write('apps/web/coverage/coverage-summary.json', reports(85)['apps/web']);
+  write('apps/etl/coverage/coverage-summary.json', reports(85)['apps/etl']);
   const runWith = (env, ...args) =>
     spawnSync(process.execPath, [script, ...args], {
       cwd: root,
@@ -108,7 +108,7 @@ test('--update rejects lower reports without changing baseline bytes, including 
   const { root, write, run } = fixture(t);
   const before = readFileSync(join(root, 'coverage-baseline.json'), 'utf8');
   for (const pct of [20, 79.8]) {
-    write('apps/web/coverage/coverage-summary.json', reports(pct)['apps/web']);
+    write('apps/etl/coverage/coverage-summary.json', reports(pct)['apps/etl']);
     const result = run('--update');
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /update refused/);
@@ -122,14 +122,14 @@ test('--update validates missing, incomplete and invalid reports before writing 
   const before = readFileSync(join(root, 'coverage-baseline.json'), 'utf8');
   for (const total of [
     {},
-    { ...reports(85)['apps/web'].total, functions: {} },
-    { ...reports(85)['apps/web'].total, statements: { pct: 101 } },
+    { ...reports(85)['apps/etl'].total, functions: {} },
+    { ...reports(85)['apps/etl'].total, statements: { pct: 101 } },
   ]) {
-    write('apps/web/coverage/coverage-summary.json', { total });
+    write('apps/etl/coverage/coverage-summary.json', { total });
     assert.notEqual(run('--update').status, 0);
     assert.equal(readFileSync(join(root, 'coverage-baseline.json'), 'utf8'), before);
   }
-  rmSync(join(root, 'apps/web/coverage/coverage-summary.json'));
+  rmSync(join(root, 'apps/etl/coverage/coverage-summary.json'));
   assert.notEqual(run('--update').status, 0);
   assert.equal(readFileSync(join(root, 'coverage-baseline.json'), 'utf8'), before);
 });
@@ -141,7 +141,7 @@ test('--update raises minima only after complete reports pass', (t) => {
   assert.match(result.stdout, /PASS/);
   assert.deepEqual(JSON.parse(readFileSync(join(root, 'coverage-baseline.json'))), {
     ...baseline,
-    workspaces: { 'apps/web': { lines: 85, branches: 85 } },
+    workspaces: { 'apps/etl': { lines: 85, branches: 85 } },
   });
 });
 
@@ -152,9 +152,9 @@ test('base comparison rejects every reduction, including noise, and removed exis
     write('coverage-baseline.json', {
       ...baseline,
       workspaces: {
-        'apps/web': {
-          ...baseline.workspaces['apps/web'],
-          [metric]: baseline.workspaces['apps/web'][metric] - 0.1,
+        'apps/etl': {
+          ...baseline.workspaces['apps/etl'],
+          [metric]: baseline.workspaces['apps/etl'][metric] - 0.1,
         },
       },
     });
@@ -181,7 +181,7 @@ test('base reduction requires a valid, scoped exception that covers the new mini
   init();
   write('coverage-baseline.json', {
     ...baseline,
-    workspaces: { 'apps/web': { lines: 75, branches: 70 } },
+    workspaces: { 'apps/etl': { lines: 75, branches: 70 } },
   });
   write('coverage-exceptions.json', [exception]);
   assert.equal(run('--check-base').status, 0);
@@ -221,7 +221,7 @@ test('push and manual runs compare their previous merge-base, not the current HE
   const before = git('rev-parse', 'HEAD');
   write('coverage-baseline.json', {
     ...baseline,
-    workspaces: { 'apps/web': { lines: 75, branches: 70 } },
+    workspaces: { 'apps/etl': { lines: 75, branches: 70 } },
   });
   commit();
   for (const sha of [before, '']) {

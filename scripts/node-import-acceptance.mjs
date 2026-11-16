@@ -18,7 +18,7 @@ import {
   loadProduction,
   validateProduction,
 } from '../packages/ingest/dist/production/index.js';
-import { listFiles } from '../packages/ingest/dist/release-client/files.js';
+import { listFiles } from '../packages/ingest/dist/release-package/files.js';
 import { runGraph } from '../packages/ingest/dist/build/graph.js';
 import { wave13bStages } from '../packages/ingest/dist/build/wave13b.js';
 import { compare } from '../packages/ingest/dist/parity/compare.js';
