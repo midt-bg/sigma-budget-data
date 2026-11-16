@@ -1,11 +1,30 @@
-# СИГМА Бюджет: данни
+# СИГМА Бюджет - данни
 
-Хранилището е за данните на [СИГМА Бюджет](https://github.com/midt-bg/sigma-budget): официалните източници, обработката им и изданията, които сайтът показва.
+Това хранилище съдържа официалните входове, регистрите, TypeScript обработката, независимите проверки и неизменните издания на СИГМА Бюджет. Кодът на сайта се поддържа в midt-bg/sigma-budget.
 
-## Състояние
+Необходими са Node 24 и pnpm 10.33.0. Входовете са в Git; не са нужни тайни или отделен входен архив.
 
-Хранилището е в подготовка. Източниците, обработката и изданията се пренасят от [midt-bg/sigma-budget](https://github.com/midt-bg/sigma-budget) и дотогава се намират там.
+```sh
+pnpm install --frozen-lockfile
+pnpm build
+# Историята удостоверява историческите производители от предишното хранилище.
+git -c credential.helper= fetch --no-tags --filter=blob:none https://github.com/midt-bg/sigma-budget main:refs/remotes/source/main
+node packages/ingest/dist/validate/cli.js --live --only REGISTRY
+./budget check-site --inputs .
+./budget build --commit HEAD --inputs . --out /tmp/new-budget-candidate --build-date 2026-11-16
+./budget validate --release /tmp/new-budget-candidate --inputs .
+```
 
-## Лиценз
+Изходната директория трябва да е нова и извън хранилището. Датата е изричен параметър. Процедурата за обновяване е в [docs/release.md](docs/release.md), а форматът на данните е в [docs/data-spec.md](docs/data-spec.md).
 
-Кодът се разпространява под лиценза [MIT](LICENSE).
+Сайтът ще получава проверено издание чрез `pnpm data:pull`, което ще бъде добавено в отделна задача в хранилището на сайта. Тази команда още не съществува. Изданието се избира по идентификатор и се проверява по манифеста, размерите и SHA-256 преди приемане.
+
+```sh
+pnpm format:check
+pnpm typecheck
+pnpm test -- --coverage
+pnpm check:coverage
+node --test scripts/ci-gates.test.mjs
+```
+
+Приносът следва [AGENTS.md](AGENTS.md). Release PR се слива с merge commit. Официалните оригинали и изтеглените входове остават байт по байт. Публикуването в продукция изисква изрично одобрение от собственика.

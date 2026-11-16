@@ -1,0 +1,97 @@
+name: data
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  security:
+    uses: ./.github/workflows/security.yml
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: node scripts/check-coverage.mjs --check-base
+        env:
+          COVERAGE_BASE_REF: ${{ github.base_ref }}
+          COVERAGE_BASE_SHA: ${{ github.event.before }}
+      - run: node --test scripts/check-coverage.test.mjs scripts/ci-gates.test.mjs
+      - run: pnpm test -- --coverage
+      - run: pnpm check:coverage
+      - name: Preserve protected inputs
+        if: ${{ always() }}
+        run: test -z "$(git status --porcelain -- data packages/ingest/test/fixtures packages/ingest/test/expected)"
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm --filter @sigma-budget/etl... build
+      - run: git -c credential.helper= fetch --no-tags --filter=blob:none https://github.com/midt-bg/sigma-budget main:refs/remotes/source/main
+      - name: Check the source and dataset registries
+        run: |
+          status=0
+          node packages/ingest/dist/validate/cli.js --live --only REGISTRY > "$RUNNER_TEMP/registry.json" || status=$?
+          cat "$RUNNER_TEMP/registry.json"
+          if grep -q 'verification skipped' "$RUNNER_TEMP/registry.json"; then
+            exit 1
+          fi
+          exit "$status"
+      - run: ./budget check-site --inputs .
+      - name: Preserve protected inputs
+        if: ${{ always() }}
+        run: test -z "$(git status --porcelain -- data packages/ingest/test/fixtures packages/ingest/test/expected)"
+  reproduce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @sigma-budget/etl... build
+      - run: |
+          build_date=$(node -p "require('./data/release/releases/current.json').built")
+          node scripts/node-import-acceptance.mjs . "$RUNNER_TEMP/node-acceptance" "$build_date"
+      - name: Preserve protected inputs
+        if: ${{ always() }}
+        run: test -z "$(git status --porcelain -- data packages/ingest/test/fixtures packages/ingest/test/expected)"
+  required-validation:
+    if: ${{ always() }}
+    needs: [security, test, check, reproduce]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every validation must succeed
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: node -e 'const jobs=JSON.parse(process.env.RESULTS); if (Object.values(jobs).some(job => job.result !== "success")) process.exit(1)'
