@@ -692,7 +692,7 @@ export function kfp(ctx: Context, evidence: KfpEvidence): Check {
     pm.length === 1 &&
       pm[0].month === (lastN % 12) + 1 &&
       pm[0].status === 'pending' &&
-      (!('id' in pm[0]) || pm[0].id === 'P04'),
+      (pm[0].id === 'P04' || (!('pending' in ex.meta) && !('id' in pm[0]))),
     'pendingMonths: the next month must be the single P04 block',
   );
   if (pm.length && lastN < 12)

@@ -1191,7 +1191,7 @@ export function catalog(ctx: Context): Check {
       files: disk.length,
       real,
       mock,
-      ...('pending' in n ? { pending: pend } : {}),
+      ...('pending' in core ? { pending: pend } : {}),
       primarySources: len(rawFiles, kind(rawFiles, cat, 'files')),
     };
   c.ok(
