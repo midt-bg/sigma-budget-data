@@ -88,6 +88,16 @@ const first = {
   releaseId: cliBuild.release_id,
   manifest: JSON.parse(await readFile(join(firstRoot, 'manifest.json'), 'utf8')),
 };
+// The data repository also retains the current published data bytes.
+const committed = join(root, 'data/release');
+const expectedData = (await listFiles(committed)).filter((path) => !path.startsWith('releases/'));
+assert.deepEqual(await listFiles(join(first.outputRoot, 'data')), expectedData);
+for (const path of expectedData)
+  assert.deepEqual(
+    await readFile(join(first.outputRoot, 'data', path)),
+    await readFile(join(committed, path)),
+    'committed data: ' + path,
+  );
 const second = await buildRelease({ ...common, outputRoot: join(out, 'second') });
 assert.equal(
   second.releaseId,
@@ -314,6 +324,7 @@ const report = {
   candidate: first.outputRoot,
   outputs: first.manifest.outputs.length,
   inputs: first.manifest.inputs.length,
+  committedData: `${expectedData.length} data files byte-identical`,
   doubleBuild: 'all package bytes identical',
   reproduce: 'all package bytes and ID identical',
   defaultCli: 'validate and reproduce pass; all package bytes identical',

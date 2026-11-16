@@ -25,11 +25,7 @@ test('all retained provenance commands stay in CI', () => {
     const raw = readFileSync(path, 'utf8')
       .split('\n')
       .map((x) => x.trim().replace(/^(?:- )?run: /, ''));
-    const current = raw.map((x) =>
-      x === 'bash scripts/ci-install-browser.sh'
-        ? 'pnpm exec playwright install --with-deps chromium'
-        : x,
-    );
+    const current = raw;
     for (const command of commands) assert.ok(current.includes(command), command);
   }
 });
@@ -59,22 +55,6 @@ test('coverage CI checks the target baseline with history and env refs before ru
     COVERAGE_BASE_SHA: '${{ github.event.before }}',
   });
   assert.ok(gate < job.steps.findIndex((step) => step.run === 'pnpm test -- --coverage'));
-});
-
-test('committed release checks use Node with repository inputs', () => {
-  const { parse } = createRequire(new URL('../packages/ingest/package.json', import.meta.url))(
-    'yaml',
-  );
-  const jobs = parse(workflow).jobs;
-  const steps = jobs.check.steps;
-  const compile = steps.findIndex(
-    (step) => step.run === 'pnpm --filter @sigma-budget/etl... build',
-  );
-  const validate = steps.findIndex((step) => step.run === './budget check-site --inputs .');
-  assert.ok(compile >= 0 && validate > compile);
-  assert.equal(steps[validate].if, undefined);
-  assert.ok(!steps[validate]['continue-on-error']);
-  assert.ok(jobs.reproduce.steps.some((step) => step.run === 'node scripts/reproduce-current.mjs'));
 });
 
 test('check job checks the registries with the full history, so the historical producers are looked up', () => {

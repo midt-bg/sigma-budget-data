@@ -1,7 +1,7 @@
 {
   ".github/workflows/data.yml": [
     "./budget check-site --inputs .",
-    "node scripts/reproduce-current.mjs",
+    "node scripts/node-import-acceptance.mjs . \"$RUNNER_TEMP/node-acceptance\" \"$build_date\"",
     "node packages/ingest/dist/validate/cli.js --live --only REGISTRY > \"$RUNNER_TEMP/registry.json\" || status=$?"
   ]
 }
