@@ -20,6 +20,11 @@ const fixture = join(root, 'packages/ingest/test/fixtures/wave18');
 const manifest = JSON.parse(readFileSync(join(fixture, 'manifest.json'), 'utf8'));
 const pinned = (path: string) => ({ path, sha256: sha256(readFileSync(path)) });
 const published = JSON.parse(readFileSync(join(fixture, 'data/release/execution.json'), 'utf8'));
+// Removed dataset links are not part of the current execution contract.
+// Keep all financial fields from the frozen fixture unchanged.
+delete published.meta.pending;
+for (const month of published.pendingMonths) delete month.id;
+
 // Frozen standalone scope; production historical coverage is verified by supplements.test.ts.
 published.reconcile.note = published.reconcile.note.replace(
   '; причината предстои да бъде проверена от експерт по публични финанси.',
