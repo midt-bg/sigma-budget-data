@@ -1,0 +1,321 @@
+# Checks, build and deployment of the site (README „Сглобяване и публикуване“; docs/adr/0002-react-router-ssr.md).
+#   pull request to main             -> the registries, data validation, the TypeScript check, the build of the Worker (React Router SSR)
+#                                       with every screen checked as the server sends it and as the browser shows it, the browser checks of the
+#                                       app (screens against the built Worker), a build of the pinned data image, and the release
+#                                       registry on a local Worker (stage C)
+#   push to main                     -> the same, then deploy the built Worker to staging (noindex)
+# There is no develop branch. This workflow never deploys to production: production comes later, by hand (docs/production-procedure.md).
+# The staging deployment needs the repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID and the variable STAGING_ORIGIN
+# (the staging Worker's address). Without the secrets the deploy step is skipped; with them but without STAGING_ORIGIN it fails, because
+# the compatibility check of the code against the current release (tests/release/compat_check.mjs) needs that address.
+name: site
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    uses: ./.github/workflows/security.yml
+
+  coverage:
+    needs: [node-inputs]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: pnpm
+      - name: Install tools
+        run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: registered-node-input-archive
+          path: ${{ runner.temp }}/registered-node-input-archive
+      - name: Restore the four pinned programme originals for independent checks
+        run: node scripts/restore-programme-test-inputs.mjs "$RUNNER_TEMP/registered-node-input-archive/registered-node-inputs.tar.gz"
+      - name: Coverage gate self-tests
+        run: node --test scripts/check-coverage.test.mjs scripts/ci-gates.test.mjs scripts/ci-install-browser.test.mjs scripts/restore-programme-test-inputs.test.mjs
+      - name: Coverage baseline ratchet against target
+        env:
+          COVERAGE_BASE_REF: ${{ github.base_ref }}
+          COVERAGE_BASE_SHA: ${{ github.event.before }}
+        run: node scripts/check-coverage.mjs --check-base
+      - name: All Node suites, once, with coverage
+        run: pnpm test -- --coverage
+      - name: Node tests leave protected inputs unchanged
+        if: always()
+        run: test -z "$(git status --porcelain -- data packages/ingest/test/fixtures packages/ingest/test/expected apps/web/app/routes/__fixtures__)"
+      - name: Per-workspace regression gate
+        run: pnpm check:coverage
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: coverage
+          path: |
+            coverage-summary.md
+            apps/*/coverage/coverage-summary.json
+            packages/*/coverage/coverage-summary.json
+          if-no-files-found: error
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: pnpm
+      - name: Install tools
+        run: |
+          pnpm install --frozen-lockfile
+      - name: Install the Chromium of the pinned Playwright
+        run: bash scripts/ci-install-browser.sh
+      - name: Check repository formatting
+        run: pnpm format:check
+      - name: TypeScript
+        run: pnpm typecheck
+      - name: Warn when the monthly КФП report is overdue (never fails)
+        run: |
+          pnpm --filter @sigma-budget/etl... build
+          pnpm exec budget-ts freshness
+      - name: Check the source and dataset registries
+        run: node packages/ingest/dist/validate/cli.js --live --only REGISTRY
+      - name: Check committed annual provenance API responses and membership
+        run: node tests/release/budget_provenance_check.mjs
+      - name: Compatibility of code and data (stage E)
+        run: node tests/release/compat_check.mjs
+      - name: Build the Worker for staging and check every screen
+        env:
+          ORIGIN: ${{ vars.STAGING_ORIGIN || 'https://sigma-budget.midt.bg' }}
+        run: pnpm build:release --env staging --origin "$ORIGIN" --noindex
+      - name: The checks and the build leave data/release unchanged
+        run: test -z "$(git status --porcelain -- data/release)" || { git status --short -- data/release; exit 1; }
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: build
+          path: apps/web/build
+          retention-days: 7
+
+  check:
+    # The browser checks of the app (hash mode, the expected figures read from data/release/execution.json): all of them block, and the
+    # staging deployment waits for them. The full screens also covers 400 px and keyboard paths; it runs against the built Worker
+    # (the screens drawn on the server, then taken over by the app), the others test the app on the composed static site in tmp/.
+    needs: [build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/tmp/pw-browsers # the checks look there first (redirects and others set it as their default)
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: |
+          pnpm install --frozen-lockfile
+      - name: Install the Chromium of the pinned Playwright
+        run: bash scripts/ci-install-browser.sh
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: build
+          path: apps/web/build
+      - name: Screens, accessibility and layout (against the built Worker)
+        run: |
+          pnpm exec wrangler dev -c apps/web/build/server/wrangler.json --ip 127.0.0.1 --port 8814 --persist-to "$RUNNER_TEMP/state" > "$RUNNER_TEMP/wrangler.log" 2>&1 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://127.0.0.1:8814/robots.txt && break; sleep 1; done
+          E2E_WORKER_URL=http://127.0.0.1:8814 pnpm test:e2e --project=worker visual-audit.spec.ts
+          E2E_WORKER_URL=http://127.0.0.1:8814 pnpm test:e2e --project=worker light-contrast.spec.ts
+      - name: Screen audits, states, variants and checker self-test (Playwright Test)
+        run: E2E_WORKER_URL=http://127.0.0.1:8814 pnpm test:e2e --project=worker screens-base.spec.ts screens-demo.spec.ts screens-variants.spec.ts screens-selftest.spec.ts
+      - name: Screen navigation, sharing, shell, glossary, tabs and views
+        run: E2E_WORKER_URL=http://127.0.0.1:8814 pnpm test:e2e --project=worker screens-tour.spec.ts screens-sharing.spec.ts screens-shell.spec.ts screens-glossary.spec.ts screens-tabs.spec.ts screens-views.spec.ts
+      - name: Early boot, server DOM adoption and cross-origin security (Playwright Test)
+        run: E2E_WORKER_URL=http://127.0.0.1:8814 pnpm test:e2e --project=worker boot.spec.ts narrative-adoption.spec.ts security-headers.spec.ts
+      - name: Annual periods, aliases, SSR notices and stored preferences
+        run: E2E_WORKER_URL=http://127.0.0.1:8814 pnpm test:e2e --project=worker period-matrix.spec.ts
+      - name: Current-bill lists, shared units and navigation
+        run: E2E_WORKER_URL=http://127.0.0.1:8814 pnpm test:e2e --project=worker public-bill-lists.spec.ts share-units.spec.ts react-bridge.spec.ts
+      - name: Old addresses
+        run: pnpm test:e2e --project=static redirects.spec.ts
+      - name: Tax calculator
+        run: pnpm test:e2e --project=static calc.spec.ts
+      - name: Sharing and export
+        run: pnpm test:e2e --project=static share.spec.ts
+      - name: Acceptance figures
+        run: pnpm test:e2e --project=static accept.spec.ts overlap.spec.ts
+      - name: Motion
+        run: pnpm test:e2e --project=static motion.spec.ts
+      # A failed test step prevents subsequent default-success test steps from
+      # running, so a later Playwright invocation cannot clean its failure traces.
+      - name: Upload failed Playwright traces and screenshots
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-failure-results
+          path: tmp/e2e-results
+          if-no-files-found: ignore
+
+  release:
+    # the release registry and the operator API (stage C) on the Worker with local D1 and R2, driven through the TypeScript operator
+    # (./budget): acceptance scenarios 3, 4, 5, 6 and 9, rollback, the public API and the deploy's compatibility check, with synthetic
+    # releases (tests/release/release_check.mjs; docs/release.md); the restore drill of scenario 10 (tests/release/restore_drill.mjs;
+    # docs/operator-guide.md)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: node --test tests/release/compat_check.test.mjs tests/release/release_lib.test.mjs
+      - run: node tests/release/release_check.mjs
+      - run: node tests/release/restore_drill.mjs
+
+  required-validation:
+    if: ${{ always() }}
+    needs: [security, coverage, build, check, release, node-inputs, node-import]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every validation must succeed
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        run: node -e 'const r=JSON.parse(process.env.RESULTS); if (!r.length || r.some(x => x !== "success")) process.exit(1)'
+
+  deploy:
+    needs: [required-validation]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: staging
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: build
+          path: apps/web/build
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: pnpm
+      # the wrangler of pnpm-lock.yaml, the one release_check tests with
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy to the staging Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          STAGING_ORIGIN: ${{ vars.STAGING_ORIGIN }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::notice::Cloudflare secrets are not set: skipping the deployment."
+            exit 0
+          fi
+          # the new code must read the release that is current on staging (tests/release/compat_check.mjs; no release yet passes). Without the
+          # address that check cannot run, and the code is not deployed unchecked
+          if [ -z "$STAGING_ORIGIN" ]; then
+            echo "::error::The variable STAGING_ORIGIN is not set: the compatibility check cannot run, so nothing is deployed."
+            exit 1
+          fi
+          node tests/release/compat_check.mjs --env-url "$STAGING_ORIGIN"
+          pnpm exec wrangler deploy -c apps/web/build/server/wrangler.json      # built with CLOUDFLARE_ENV=staging: the staging Worker, D1 and R2
+
+  node-inputs:
+    # Draft assets need push access. This job runs no checkout or project code;
+    # the token is exposed only to the fixed download, then all bytes are pinned.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download only the approved repository-owned CI archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --hostname github.com repos/midt-bg/sigma-budget/releases/assets/746880567 -H 'Accept: application/octet-stream' > "$RUNNER_TEMP/registered-node-inputs.tar.gz"
+          printf '%s  %s\n' '9717d7f91bbed7c5c6ced6e42d637820dfbdd2f6571579101c6489df91538a3f' "$RUNNER_TEMP/registered-node-inputs.tar.gz" | sha256sum --check
+          test "$(stat -c '%s' "$RUNNER_TEMP/registered-node-inputs.tar.gz")" = 153847296
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: registered-node-input-archive
+          path: ${{ runner.temp }}/registered-node-inputs.tar.gz
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+
+  node-import:
+    # Required actual-source acceptance. A missing restored snapshot fails; no core acceptance skip.
+    needs: [node-inputs]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @sigma-budget/etl... build
+      - name: Check the registries against the full history (every historical producer exists at its commit)
+        # the build job checks the registries on a shallow checkout, where the commits of the historical producers cannot be looked up
+        run: |
+          status=0
+          node packages/ingest/dist/validate/cli.js --live --only REGISTRY > "$RUNNER_TEMP/registry.json" || status=$?
+          cat "$RUNNER_TEMP/registry.json"
+          if grep -q 'verification skipped' "$RUNNER_TEMP/registry.json"; then
+            echo '::error::the historical producers were not checked against the Git history'
+            exit 1
+          fi
+          exit "$status"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: registered-node-input-archive
+          path: ${{ runner.temp }}/registered-node-input-archive
+      - name: Authenticate the reviewed archive and every registered input
+        run: node scripts/restore-node-input-cache.mjs "$RUNNER_TEMP/registered-node-input-archive/registered-node-inputs.tar.gz" "$RUNNER_TEMP/registered-node-inputs"
+      - name: Validate the committed release manifest and complete current TypeScript rules
+        run: ./budget check-site --inputs "$RUNNER_TEMP/registered-node-inputs"
+      - name: Actual Node readers, complete rules, double build and local recorded-code replay
+        run: node scripts/node-import-acceptance.mjs "$RUNNER_TEMP/registered-node-inputs" "$RUNNER_TEMP/node-acceptance" 2026-11-16
+      - name: Provision the Chromium of the pinned Playwright (outside import runtime)
+        run: bash scripts/ci-install-browser.sh
+      - name: Package the fresh Node candidate and exercise its Worker and browser identity
+        run: node scripts/node-candidate-site-acceptance.mjs "$RUNNER_TEMP/node-acceptance/candidate" "$RUNNER_TEMP/node-site"
+      - name: Protected checkout state
+        if: always()
+        run: test -z "$(git status --porcelain -- data packages/ingest/test/fixtures)"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: node-import-acceptance
+          path: |
+            ${{ runner.temp }}/node-acceptance/acceptance.json
+            ${{ runner.temp }}/node-acceptance/candidate/manifest.json
+            ${{ runner.temp }}/node-acceptance/candidate/validation.json
+            ${{ runner.temp }}/node-acceptance/candidate/receipt.json
+            ${{ runner.temp }}/node-site/site-acceptance.json
+          if-no-files-found: error
