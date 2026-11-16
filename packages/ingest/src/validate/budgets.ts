@@ -234,7 +234,7 @@ export function budgets(ctx: Context): Check {
     'meta asOf/source',
   );
   const corePending =
-    supplement.budgets === 4 && !('pending' in core) ? [] : required<any>(core, 'pending');
+    !('pending' in core) && !('pending' in law) ? [] : required<any>(core, 'pending');
   c.ok(
     (Array.isArray(corePending)
       ? corePending
