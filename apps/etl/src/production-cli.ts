@@ -329,14 +329,11 @@ export async function productionCli(
       );
       release = location.remote ? '' : location.base;
     }
-    if (
-      command === 'reproduce' &&
-      (location.manifest.processing.code as any).repository !==
-        'https://github.com/midt-bg/sigma-budget-data'
-    )
+    const recordedRepository = (location.manifest.processing.code as any).repository;
+    if (recordedRepository !== 'https://github.com/midt-bg/sigma-budget-data')
       throw new ReleaseError(
         2,
-        `Rebuild this manifest in midt-bg/sigma-budget at commit ${location.manifest.processing.code.commit} from processing.code.commit`,
+        `Rebuild this manifest in ${recordedRepository ?? 'the repository recorded in processing.code.repository'} at commit ${location.manifest.processing.code.commit} from processing.code.commit`,
       );
     const executorInfo = location.manifest.processing.executor as any;
     if (executorInfo?.runtime !== 'node-export/1') {
