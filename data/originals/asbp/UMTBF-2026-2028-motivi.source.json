@@ -1,0 +1,13 @@
+{
+  "acquired": "2026-11-08T01:02:38.189923+00:00",
+  "method": "local tracked-file acquisition",
+  "origin": {
+    "repository": "https://github.com/midt-bg/sigma-budget",
+    "commit": "838c64c",
+    "path": "data/originals/asbp/UMTBF-2026-2028-motivi.pdf",
+    "blob": "ba6d728c49d4e7f5b758cec09c518f5867ba09d5"
+  },
+  "bytes": 3393872,
+  "sha256": "d951d866da468ae439ecbfc4131cf5005e28be39e3fcbb70d8660ca93337ac9b",
+  "note": "Fresh verification and acquisition from the tracked repository PDF. No claim of a new publisher download or recovery of the missing historical sidecar."
+}
