@@ -16,32 +16,38 @@ import { Context } from './context.js';
 import { runWave15, WAVE15_UNPORTED } from './wave15.js';
 const corpus = new URL('../../test/fixtures/validate15/corpus/', import.meta.url);
 it('runs the seven groups with exact scope and refuses unsupported selection', () => {
-  const ctx = new Context(corpus.pathname),
-    result = runWave15(ctx, [
-      'PROGRAMS',
-      'ANNEX3',
-      'REVENUE',
-      'EXPENDITURE',
-      'MEASURES',
-      'LAW',
-      'BUDGETS',
+  const presented = mkdtempSync(resolve('tmp/wave15-corpus-'));
+  cpSync(corpus, presented, { recursive: true });
+  try {
+    const ctx = new Context(presented),
+      result = runWave15(ctx, [
+        'PROGRAMS',
+        'ANNEX3',
+        'REVENUE',
+        'EXPENDITURE',
+        'MEASURES',
+        'LAW',
+        'BUDGETS',
+      ]);
+    expect(result.groups.map((c) => [c.name, c.n])).toEqual([
+      ['ANNEX3', 169],
+      ['REVENUE', 602],
+      ['EXPENDITURE', 619],
+      ['MEASURES', 324],
+      ['LAW', 1826],
+      ['BUDGETS', 935],
+      ['PROGRAMS', 12499],
     ]);
-  expect(result.groups.map((c) => [c.name, c.n])).toEqual([
-    ['ANNEX3', 169],
-    ['REVENUE', 602],
-    ['EXPENDITURE', 619],
-    ['MEASURES', 324],
-    ['LAW', 1826],
-    ['BUDGETS', 935],
-    ['PROGRAMS', 12499],
-  ]);
-  expect(result.status).toBe('PASS');
-  expect(result.completeValidation).toBe(false);
-  expect(result.unported).toContain('BUDGET2027');
-  expect(result.unported).toContain('KFP');
-  for (const name of WAVE15_UNPORTED)
-    expect(() => runWave15(ctx, [name])).toThrow('unknown or unported');
-  expect(() => runWave15(ctx, [])).toThrow('Explicit group selection');
+    expect(result.status).toBe('PASS');
+    expect(result.completeValidation).toBe(false);
+    expect(result.unported).toContain('BUDGET2027');
+    expect(result.unported).toContain('KFP');
+    for (const name of WAVE15_UNPORTED)
+      expect(() => runWave15(ctx, [name])).toThrow('unknown or unported');
+    expect(() => runWave15(ctx, [])).toThrow('Explicit group selection');
+  } finally {
+    rmSync(presented, { recursive: true, force: true });
+  }
 });
 it('guards paths and parses flag values, preserves sentinels, writes PASS and FAIL atomically', () => {
   mkdirSync(resolve('tmp/ts-migration'), { recursive: true });

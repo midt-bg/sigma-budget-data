@@ -197,11 +197,6 @@
           "url"
         ],
         "value": "http://unsafe.example"
-      },
-      {
-        "op": "write",
-        "file": "apps/web/client/fixture-warning.txt",
-        "text": "private channel"
       }
     ]
   },

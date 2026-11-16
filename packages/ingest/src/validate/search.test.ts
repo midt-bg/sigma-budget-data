@@ -1,15 +1,24 @@
-import { readFileSync } from 'node:fs';
+import { copyFixture } from '../../test/support/copy-fixture.js';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { expect, it } from 'vitest';
+import { afterAll, beforeAll, expect, it } from 'vitest';
 import { parsePythonJson, pythonNumberAt } from '../common/numbers.js';
 import { Context } from './context.js';
 import { search } from './search.js';
 const fixture = fileURLToPath(new URL('../../test/fixtures/wave17c', import.meta.url));
 const corpus = `${fixture}/corpus`;
 const cases = JSON.parse(readFileSync(`${fixture}/differential.json`, 'utf8')).cases;
+let presented: string;
+beforeAll(() => {
+  presented = mkdtempSync(join(tmpdir(), 'search-corpus-'));
+  copyFixture(corpus, presented, { recursive: true });
+});
+afterAll(() => rmSync(presented, { recursive: true, force: true }));
 for (const test of cases) {
   it(`SEARCH validation findings: ${test.name}`, () => {
-    const ctx = new Context(corpus);
+    const ctx = new Context(presented);
     const original = ctx.text.bind(ctx);
     const docs: Record<string, any> = {};
     for (const op of test.ops) {

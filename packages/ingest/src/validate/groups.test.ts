@@ -175,7 +175,16 @@ describe('validator findings for the defective corpus', () => {
             ctx = new Context(root);
           for (const group of test.groups) {
             let result: unknown,
-              expected = oracle[test.name][group];
+              expected = structuredClone(oracle[test.name][group]);
+            if (group === 'INPUTS') {
+              // The presented corpus adds one pinned editorial input: two pin syntax checks.
+              for (const check of [expected.raw, expected.accepted]) {
+                check.n += 2;
+                check.facts = check.facts.map((fact: string) =>
+                  fact.replace(/^\d+ files/, (count) => `${Number(count.split(' ')[0]) + 1} files`),
+                );
+              }
+            }
             if (group === 'REGISTRY') {
               const trackedPaths = new Set([...tracked, ...added]);
               const renamed = modernize(root, trackedPaths);
