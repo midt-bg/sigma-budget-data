@@ -14,7 +14,7 @@ import * as documents from '@sigma-budget/ingest/readers/documents';
 import * as snapshots from '@sigma-budget/ingest/readers/snapshots';
 import * as pdf from '@sigma-budget/ingest/readers/pdf';
 import * as annual from '@sigma-budget/ingest/readers/annual';
-import * as releaseClient from '@sigma-budget/ingest/release-client';
+import * as releaseClient from '@sigma-budget/ingest/release-package';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const flags = {};
@@ -77,7 +77,7 @@ try {
     [snapshots.SnapshotReader, 'readers/snapshots'],
     [pdf.readPdf, 'readers/pdf'],
     [annual.prepareAnnual, 'readers/annual'],
-    [releaseClient.preflightRelease, 'release-client'],
+    [releaseClient.preflightRelease, 'release-package'],
   ]) {
     assert.equal(typeof fn, 'function', name);
   }

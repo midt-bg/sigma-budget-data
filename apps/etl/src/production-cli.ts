@@ -30,18 +30,16 @@ import {
 } from '@sigma-budget/ingest/production';
 import {
   canonicalJson,
-  DEFAULT_OBJECT_LIMIT,
   ReleaseError,
   type HttpTransport,
-} from '@sigma-budget/ingest/release-client';
+} from '@sigma-budget/ingest/release-package';
 import { prepareFiscalDocuments } from '@sigma-budget/ingest/readers/fiscal-documents';
 import { preparePublicationDocuments } from '@sigma-budget/ingest/readers/publication-documents';
 import { prepareAnnual, readAnnualRegistration } from '@sigma-budget/ingest/readers/annual';
 import { safePath as safeDestination } from '@sigma-budget/ingest/readers/annual';
 import { createRequire } from 'node:module';
 import { sourceOperatorCli, type SourceOperatorDependencies } from './source-operator.js';
-import { releaseOperatorCli, type OperatorCliDependencies } from './release-operator.js';
-import { operatorReceipts, REPOSITORY_ROOT } from './repository.js';
+import { REPOSITORY_ROOT } from './repository.js';
 import { locateManifest, materializeRemote, getBytes } from './manifest-location.js';
 
 export const PRODUCTION_USAGE = `Usage: budget <command> [options] (alias: budget-ts)
@@ -53,7 +51,6 @@ export const PRODUCTION_USAGE = `Usage: budget <command> [options] (alias: budge
   refetch --manifest FILE_OR_URL | --current SITE --out NEW_SNAPSHOT
   import-source --source ID --file FILE --out NEW_SNAPSHOT [--url URL] [--replace] [--dry-run]
   source-status | drift (source operation options)
-  status | upload | publish | rollback --environment NAME [--url ORIGIN] (existing release operator options)
   prepare --inputs SNAPSHOT --out NEW_DIRECTORY --build-date YYYY-MM-DD [--programme-source archive|extracted]
   freshness (existing options)
   --root defaults to this checkout of the repository, whatever the current folder; --json emits machine-readable results.
@@ -65,7 +62,6 @@ export interface ProductionCliDependencies {
   write?: (s: string) => void;
   error?: (s: string) => void;
   source?: SourceOperatorDependencies;
-  operator?: OperatorCliDependencies;
   transport?: HttpTransport;
 }
 const boolean = new Set([
@@ -153,24 +149,6 @@ export async function productionCli(
         write: out,
         error,
       });
-    }
-    if (['status', 'upload', 'publish', 'rollback', 'preflight'].includes(command!)) {
-      const environment = required('--environment'),
-        forwarded = pass();
-      if (!m.has('--url')) {
-        let envs = JSON.parse(await readFile(join(root, 'apps/etl/environments.json'), 'utf8'));
-        const local = join(root, 'apps/etl/environments.local.json');
-        if (existsSync(local)) envs = { ...envs, ...JSON.parse(await readFile(local, 'utf8')) };
-        if (typeof envs[environment]?.url !== 'string')
-          throw new ReleaseError(2, 'Named environment is not provisioned');
-        forwarded.push('--url', envs[environment].url);
-      }
-      if (['upload', 'publish', 'preflight'].includes(command!) && !m.has('--originals'))
-        forwarded.push('--originals', root);
-      if (!m.has('--max-object-bytes'))
-        forwarded.push('--max-object-bytes', String(DEFAULT_OBJECT_LIMIT));
-      if (!m.has('--receipts')) forwarded.push('--receipts', operatorReceipts(root));
-      return releaseOperatorCli([command!, ...forwarded], { ...deps.operator, stdout: out });
     }
     if (command === 'refetch') {
       allowed([
@@ -365,6 +343,15 @@ export async function productionCli(
       );
       release = location.remote ? '' : location.base;
     }
+    if (
+      command === 'reproduce' &&
+      (location.manifest.processing.code as any).repository !==
+        'https://github.com/midt-bg/sigma-budget-data'
+    )
+      throw new ReleaseError(
+        2,
+        `Rebuild this manifest in midt-bg/sigma-budget at commit ${location.manifest.processing.code.commit} from processing.code.commit`,
+      );
     const executorInfo = location.manifest.processing.executor as any;
     if (executorInfo?.runtime !== 'node-export/1') {
       throw new ReleaseError(

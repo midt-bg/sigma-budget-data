@@ -32,8 +32,7 @@ import {
   type ExecutionContext,
   type ValidationGroup,
 } from './types.js';
-import { readCandidate } from '../../../../apps/web/scripts/candidate-data.js';
-import { preflightRelease } from '../release-client/package.js';
+import { preflightRelease } from '../release-package/package.js';
 
 const exec = promisify(execFile);
 const owned: string[] = [];
@@ -250,7 +249,6 @@ describe('recorded Node build lifecycle (synthetic numeric executor)', () => {
       missingInputs: [],
     });
     await preflightRelease({ release: a.outputRoot, originals: f.input });
-    expect(readCandidate(a.outputRoot).releaseId).toBe(a.releaseId);
   });
   it.each(['wrong', 'missing', 'disagreement'])(
     'rejects %s committed pins before invoking executor',

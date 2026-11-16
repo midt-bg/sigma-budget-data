@@ -347,27 +347,6 @@ export function privacy(ctx: Context): Check {
         `catalog.files[] ${k} ${repr(u.slice(0, 80))}`,
       );
     }
-  const hits: string[] = [];
-  for (const base of ['apps/web/public', 'apps/web/client'])
-    for (const f of files(ctx.root, base)) {
-      if (/\.(png|woff|woff2|ico|jpg|webp|gz)$/.test(f)) continue;
-      try {
-        const t = new TextDecoder('utf-8', { fatal: true })
-          .decode(readFileSync(safePath(ctx.root, `${base}/${f}`)))
-          .toLowerCase();
-        if (t.includes('private channel') || t.includes('частен канал'))
-          hits.push(
-            relative(join(ctx.root, 'apps/web/public'), join(ctx.root, base, f)).replaceAll(
-              '\\',
-              '/',
-            ),
-          );
-      } catch (e) {
-        if (!(e instanceof TypeError)) throw e;
-      }
-    }
-  if (hits.length)
-    c.warn(`web assets outside data mentions a private channel: ${hits.slice(0, 5).join(', ')}`);
   c.fact(`${scanned} files scanned, 0 forbidden words`);
   return c;
 }

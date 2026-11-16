@@ -182,17 +182,7 @@ export class Context {
   }
   routes(): Routes {
     return (this.routeCache ??= new Routes(
-      strictJson(
-        readFileSync(
-          safePath(
-            this.root,
-            this.dataDir === 'data'
-              ? 'data/inputs/editorial/routes.json'
-              : 'apps/web/app/lib/routes.json',
-          ),
-          'utf8',
-        ),
-      ),
+      strictJson(readFileSync(safePath(this.root, 'data/inputs/editorial/routes.json'), 'utf8')),
     ));
   }
 }

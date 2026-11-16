@@ -18,7 +18,7 @@ const declared = [
   'data/release/expenditure.json',
   'data/release/sebra.json',
   'data/release/budget2027.json',
-  'apps/web/app/lib/routes.json',
+  'data/inputs/editorial/routes.json',
   'data/datasets.yaml',
   'data/sources.yaml',
 ];

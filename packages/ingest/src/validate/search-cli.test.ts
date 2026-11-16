@@ -1,5 +1,5 @@
+import { copyFixture as cpSync, fixturePath } from '../../test/support/copy-fixture.js';
 import {
-  cpSync,
   existsSync,
   linkSync,
   mkdirSync,
@@ -122,7 +122,7 @@ it('rejects linked parents and declared input symlinks before writing', () => {
 });
 it('checks every declared input before an earlier input crash can write a report', () => {
   writeFileSync(join(root, 'data/release/search-index.json'), '{');
-  const route = join(root, 'apps/web/app/lib/routes.json');
+  const route = join(root, 'data/inputs/editorial/routes.json');
   unlinkSync(route);
   symlinkSync(join(root, 'data/release/catalog.json'), route);
   expect(invoke().status).toBe(2);

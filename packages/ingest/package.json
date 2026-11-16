@@ -12,7 +12,7 @@
     "./readers/snapshots": "./dist/readers/snapshots/index.js",
     "./readers/pdf": "./dist/readers/pdf/index.js",
     "./readers/annual": "./dist/readers/annual/index.js",
-    "./release-client": "./dist/release-client/index.js",
+    "./release-package": "./dist/release-package/index.js",
     "./readers/fiscal-documents": "./dist/readers/fiscal-documents/index.js",
     "./readers/publication-documents": "./dist/readers/publication-documents/index.js",
     "./release-build": "./dist/release-build/index.js",

@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { join } from 'node:path';
-import { readSafeBytes } from '../release-client/files.js';
+import { readSafeBytes } from '../release-package/files.js';
 import { atomicNew, fail, jsonBytes, safeRelative, sha256 } from './files.js';
 import type { ReleaseExecutor, ExecutorIdentity, ExecutorResult } from './types.js';
 

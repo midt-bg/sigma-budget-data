@@ -22,7 +22,7 @@ it('accepts repository TypeScript module paths and rejects commands, tests, buil
     'packages/ingest/__fixtures__/taxes.ts',
     'packages/ingest/node_modules/taxes/index.ts',
     'packages/test-support/producer.ts',
-    'apps/web/build/server/index.js',
+    'apps/example/dist/index.js',
     'packages/ingest/dist/production/taxes.js',
     '/packages/ingest/src/production/taxes.ts',
     'scripts/ci-gates.test.mjs',

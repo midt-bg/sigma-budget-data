@@ -1,5 +1,5 @@
+import { copyFixture as cpSync, fixturePath } from '../../test/support/copy-fixture.js';
 import {
-  cpSync,
   existsSync,
   linkSync,
   mkdirSync,

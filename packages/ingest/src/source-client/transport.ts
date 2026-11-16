@@ -111,8 +111,7 @@ export async function download(
           url: target,
           signal: controller.signal,
           headers: {
-            'User-Agent':
-              'budget-na-svetlo-data-pipeline/1.0 (+public data; contact: working group)',
+            'User-Agent': 'sigma-budget-data/1.0 (+https://github.com/midt-bg/sigma-budget-data)',
             'Accept-Encoding': 'identity',
           },
         });

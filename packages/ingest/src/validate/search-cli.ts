@@ -15,7 +15,7 @@ const DATA = [
   'programs',
   'budget2027',
 ].map((x) => `data/release/${x}.json`);
-const INPUTS = [...DATA, 'apps/web/app/lib/routes.json'];
+const INPUTS = [...DATA, 'data/inputs/editorial/routes.json'];
 const inside = (base: string, path: string) => {
   const rel = relative(base, path);
   return !rel || (!isAbsolute(rel) && rel !== '..' && !rel.startsWith(`..${sep}`));

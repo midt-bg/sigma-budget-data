@@ -10,15 +10,10 @@
     "coverage-baseline.json",
     "coverage-exceptions.json"
   ],
-  "globalEnv": ["CLOUDFLARE_ENV", "WRANGLER_CONFIG"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "build/**"]
-    },
-    "@sigma-budget/web#build": {
-      "dependsOn": ["^build"],
-      "cache": false
     },
     "typecheck": {
       "dependsOn": ["^build"]

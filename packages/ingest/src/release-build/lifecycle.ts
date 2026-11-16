@@ -1,8 +1,8 @@
 import { mkdtemp, mkdir, open, rename, rm } from 'node:fs/promises';
 import { dirname, join, matchesGlob, resolve } from 'node:path';
-import { listFiles, readSafeBytes } from '../release-client/files.js';
-import { parseManifest, preflightRelease } from '../release-client/package.js';
-import { record, type ReleaseFile, type ReleaseManifest } from '../release-client/types.js';
+import { listFiles, readSafeBytes } from '../release-package/files.js';
+import { parseManifest, preflightRelease } from '../release-package/package.js';
+import { record, type ReleaseFile, type ReleaseManifest } from '../release-package/types.js';
 import { clean } from '../io/data.js';
 import {
   atomicNew,
@@ -197,7 +197,7 @@ async function makeManifest(
     provenance_format: provenance.schema,
     processing: {
       code: {
-        repository: 'https://github.com/midt-bg/sigma-budget',
+        repository: 'https://github.com/midt-bg/sigma-budget-data',
         commit: exported.commit,
         tree: exported.tree,
         export_sha256: exported.snapshotSha256,
@@ -254,7 +254,7 @@ async function makeManifest(
     },
     compatibility: {
       execution: [...RELEASE_COMPATIBILITY.execution],
-      readers: 'release-client preflightRelease and apps/web/scripts/candidate-data.ts',
+      readers: 'release-package preflightRelease',
     },
   }) as unknown as ReleaseManifest;
 }
@@ -500,7 +500,7 @@ async function checkNodeReceipt(
   }
 }
 /** Existing client checks exact bytes/membership/receipt; Node adds complete group and receipt binding.
- * inputRoot here is canonical (the same originals contract as release-client). */
+ * inputRoot here is canonical (the same originals contract as release-package). */
 export async function checkReleaseDirectory(options: {
   releaseRoot: string;
   inputRoot: string;

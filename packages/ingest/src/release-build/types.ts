@@ -1,4 +1,4 @@
-import type { ReleaseFile, ReleaseManifest } from '../release-client/types.js';
+import type { ReleaseFile, ReleaseManifest } from '../release-package/types.js';
 
 /** The complete production rule set; raw reconstruction is a separate assertion. */
 export const REQUIRED_VALIDATION_GROUPS = [

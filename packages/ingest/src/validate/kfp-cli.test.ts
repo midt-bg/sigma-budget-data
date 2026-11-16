@@ -1,6 +1,6 @@
+import { copyFixture as cpSync, fixturePath } from '../../test/support/copy-fixture.js';
 import { createHash } from 'node:crypto';
 import {
-  cpSync,
   existsSync,
   linkSync,
   mkdirSync,

@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { mkdir, rm } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
-import { listFiles, readSafeBytes } from '../release-client/files.js';
+import { listFiles, readSafeBytes } from '../release-package/files.js';
 import {
   fail,
   fileFacts,

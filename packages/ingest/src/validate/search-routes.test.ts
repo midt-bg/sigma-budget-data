@@ -1,5 +1,6 @@
+import { copyFixture as cpSync, fixturePath } from '../../test/support/copy-fixture.js';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
@@ -14,7 +15,7 @@ for (const test of cases)
     const root = join(dir, 'inputs');
     try {
       cpSync(new URL('corpus/', fixture), root, { recursive: true });
-      writeFileSync(join(root, 'apps/web/app/lib/routes.json'), test.catalogue);
+      writeFileSync(join(root, 'data/inputs/editorial/routes.json'), test.catalogue);
       let actual: unknown;
       try {
         actual = JSON.parse(JSON.stringify(search(new Context(root))));

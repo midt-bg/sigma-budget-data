@@ -68,7 +68,6 @@ export function script(entry: string): string {
           'test-support',
         ].includes(part),
       ) ||
-    entry.startsWith('apps/web/build/') ||
     /\.(?:test|spec)\.|\.d\.(?:ts|mts)$/.test(entry)
   )
     throw new Error(`producer must be a TypeScript module path under packages/ or apps/: ${entry}`);

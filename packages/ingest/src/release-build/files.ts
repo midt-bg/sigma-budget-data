@@ -2,15 +2,15 @@ import { constants } from 'node:fs';
 import { lstat, mkdir, open, rename, rm } from 'node:fs/promises';
 import { dirname, join, parse, relative, resolve, sep } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { canonicalJson } from '../release-client/package.js';
+import { canonicalJson } from '../release-package/package.js';
 import {
   fileFacts,
   overlap,
   safeDirectory,
   sha256,
   withSafeFile,
-} from '../release-client/files.js';
-import { ReleaseError } from '../release-client/types.js';
+} from '../release-package/files.js';
+import { ReleaseError } from '../release-package/types.js';
 
 export { fileFacts, overlap, safeDirectory, sha256 };
 export function fail(message: string, code: 2 | 3 = 2): never {

@@ -1,7 +1,7 @@
+import { copyFixture as cpSync, fixturePath } from '../../test/support/copy-fixture.js';
 import { spawnSync } from 'node:child_process';
 import {
   chmodSync,
-  cpSync,
   existsSync,
   linkSync,
   mkdirSync,
@@ -142,7 +142,11 @@ it('reports a caught group crash and preserves the donor wrapper evidence separa
   expect(run([...args(), '--no-accepted']).status).toBe(1);
 });
 it('rejects a symlinked declared route or registry before any report is made', () => {
-  for (const path of ['apps/web/app/lib/routes.json', 'data/datasets.yaml', 'data/sources.yaml']) {
+  for (const path of [
+    'data/inputs/editorial/routes.json',
+    'data/datasets.yaml',
+    'data/sources.yaml',
+  ]) {
     const target = join(root, path),
       victim = join(dir, 'target');
     writeFileSync(victim, 'untouched');

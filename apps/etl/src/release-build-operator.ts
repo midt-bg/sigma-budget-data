@@ -9,7 +9,7 @@ import {
   ReproductionDifference,
   type ReleaseExecutor,
 } from '../../../packages/ingest/dist/release-build/index.js';
-import { ReleaseError } from '@sigma-budget/ingest/release-client';
+import { ReleaseError } from '@sigma-budget/ingest/release-package';
 
 export interface ReleaseBuildOperatorDependencies {
   /** Parent supplies its real exported-code graph/complete-validator adapter here. */

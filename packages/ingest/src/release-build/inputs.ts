@@ -5,8 +5,8 @@ import {
   type DatasetRegistry,
   type SourceRegistry,
 } from '../io/registry.js';
-import { listFiles, readSafeBytes } from '../release-client/files.js';
-import { record, type ReleaseFile } from '../release-client/types.js';
+import { listFiles, readSafeBytes } from '../release-package/files.js';
+import { record, type ReleaseFile } from '../release-package/types.js';
 import {
   copyAuthenticated,
   fail,

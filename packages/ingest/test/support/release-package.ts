@@ -1,8 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { canonicalJson } from '../../src/release-client/package.js';
-import { sha256 } from '../../src/release-client/files.js';
-import type { ReleaseManifest } from '../../src/release-client/types.js';
+import { canonicalJson } from '../../src/release-package/package.js';
+import { sha256 } from '../../src/release-package/files.js';
+import type { ReleaseManifest } from '../../src/release-package/types.js';
 
 export async function makeRelease(
   directory: string,

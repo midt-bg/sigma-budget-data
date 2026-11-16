@@ -3,7 +3,7 @@ import { mkdtemp, mkdir, writeFile, readFile, rm, symlink } from 'node:fs/promis
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
-import { canonicalJson } from '@sigma-budget/ingest/release-client';
+import { canonicalJson } from '@sigma-budget/ingest/release-package';
 import { sitePackage, productionCli } from './production-cli.js';
 import * as releaseBuild from '@sigma-budget/ingest/release-build';
 import * as production from '@sigma-budget/ingest/production';

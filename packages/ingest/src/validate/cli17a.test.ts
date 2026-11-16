@@ -1,6 +1,6 @@
+import { copyFixture as cpSync, fixturePath } from '../../test/support/copy-fixture.js';
 import { spawnSync } from 'node:child_process';
 import {
-  cpSync,
   existsSync,
   linkSync,
   mkdirSync,
@@ -134,7 +134,7 @@ it('compiled CLI writes reports for accepted and failed raw validations, and ref
       run(['--root', rootAlias, '--only', 'CORE', '--report', relative(repo, target)]).status,
     ).toBe(2);
     expect(readFileSync(target)).toEqual(bytes);
-    const fixed = join(root, 'apps/web/app/lib/routes.json'),
+    const fixed = join(root, 'data/inputs/editorial/routes.json'),
       fixedBytes = readFileSync(fixed);
     expect(
       run(['--root', root, '--only', 'CORE', '--no-accepted', '--report', relative(repo, fixed)])

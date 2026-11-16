@@ -56,7 +56,7 @@ export async function productionExecutor(dependenciesRoot: string): Promise<Rele
         throw new Error('Offline compiler lock mismatch');
       const scratch = context.scratchRoot,
         root = context.exportRoot;
-      const { listFiles } = await import('../release-client/files.js');
+      const { listFiles } = await import('../release-package/files.js');
       await writeFile(join(scratch, 'exported-paths.json'), JSON.stringify(await listFiles(root)), {
         flag: 'wx',
       });

@@ -1,6 +1,6 @@
+import { copyFixture as cpSync, fixturePath } from '../../test/support/copy-fixture.js';
 import { createHash } from 'node:crypto';
 import {
-  cpSync,
   existsSync,
   mkdtempSync,
   mkdirSync,
@@ -49,7 +49,7 @@ function prepare(root: string, ops: any[]): string[] {
       ...original,
       file: original.file.replace(/^pipeline\/fixture-path\.py$/, 'apps/etl/src/fixture-path.ts'),
     };
-    const p = safePath(root, op.file);
+    const p = safePath(root, fixturePath(op.file));
     mkdirSync(dirname(p), { recursive: true });
     if (op.op === 'set') {
       const raw = readFileSync(p, 'utf8'),

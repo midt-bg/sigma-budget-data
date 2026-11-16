@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { globSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { expect, it } from 'vitest';
@@ -10,11 +10,16 @@ for (const test of cases.filter((c: any) => c.name in results))
   it('preserves expanded route semantics: ' + test.name, () => {
     const root = mkdtempSync(join(tmpdir(), 'route-catalogue-'));
     try {
-      const relative = 'apps/web/app/lib/routes.json';
-      const change = test.ops.find((op: any) => op.file === relative);
+      const relative = 'data/inputs/editorial/routes.json';
+      const change = test.ops.find((op: any) => op.file.endsWith('/routes.json'));
       const data = change
         ? change.value
-        : readFileSync(new URL('corpus/' + relative, base), 'utf8');
+        : readFileSync(
+            globSync('**/routes.json', { cwd: new URL('corpus/', base) }).map(
+              (p) => new URL('corpus/' + p, base),
+            )[0]!,
+            'utf8',
+          );
       mkdirSync(dirname(join(root, relative)), { recursive: true });
       writeFileSync(join(root, relative), data);
       let actual: unknown;
