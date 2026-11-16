@@ -113,7 +113,7 @@ export function envelope(ctx: Context): Check {
   const c = new Check('ENVELOPE'),
     core = ctx.get('core.json'),
     srcs = new Set<string>(Object.keys(core.sources)),
-    pend = new Set<string>(Object.keys(core.pending));
+    pend = new Set<string>(Object.keys(core.pending ?? {}));
   const diff = [...new Set([...srcs, ...SOURCE_KEYS])]
     .filter((x) => srcs.has(x) !== SOURCE_KEYS.includes(x))
     .sort();
@@ -173,7 +173,7 @@ export function envelope(ctx: Context): Check {
             c.ok(srcs.has(s), `${f} ${p}: source ${repr(s)} not in core.sources`);
       }
   }
-  for (const [pid, b] of Object.entries(core.pending) as [string, any][]) {
+  for (const [pid, b] of Object.entries(core.pending ?? {}) as [string, any][]) {
     c.ok(b.status === 'pending' && b.id === pid, `core.pending.${pid}: bad status or id`);
     for (const k of ['title', 'reason', 'expected', 'source'])
       c.ok(truth(b[k]), `core.pending.${pid}: ${k} missing`);

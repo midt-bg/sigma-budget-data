@@ -244,7 +244,7 @@ export function feedRest(c: Check, f: any, ctx: Context): void {
     );
   }
   const expected = required(f, 'expected'),
-    pm = required(ex, 'pendingMonths');
+    pm = 'pending' in core ? required(ex, 'pendingMonths') : [];
   length(pm);
   if (expected === null || typeof expected === 'boolean' || typeof expected === 'number')
     pyError('TypeError', `object of type '${typeName(expected)}' has no len()`);

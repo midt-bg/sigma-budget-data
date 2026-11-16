@@ -344,7 +344,7 @@ export function core(ctx: Context): Check {
       'build',
       'years',
       'sources',
-      'pending',
+      ...('pending' in core ? ['pending'] : []),
       'counts',
       'population',
       'kpis',
@@ -470,81 +470,86 @@ export function core(ctx: Context): Check {
       `source ${key}: keys ${pyRepr(iterable(s, kind(s, src, key)).sort())}`,
     );
   }
-  const routes = ctx.routes(),
-    pending = get(core, 'pending');
-  c.ok(
-    equal(
-      iterable(pending, kind(pending, core, 'pending')).sort(),
-      Array.from({ length: 7 }, (_, i) => `P0${i + 1}`).filter(
-        (id) =>
-          (id !== 'P03' ||
-            !(
-              Array.isArray(ctx.get('ministries.json')?.items) &&
-              ctx
-                .get('ministries.json')
-                .items.some((item: any) => item?.programs?.tier === 'source-verified') &&
-              ['0100', '1800', '2300', '7400'].every(
-                (code) =>
-                  ctx.exists(`ministries/${code}.json`) &&
-                  isPublishedDataset(`ministries/${code}.json`, ctx.get(`ministries/${code}.json`)),
-              )
-            )) &&
-          (id !== 'P05' || !Object.hasOwn(ctx.get('execution.json').data, '2022')) &&
-          (id !== 'P06' ||
-            !(
-              ctx.exists('debt-issues.json') &&
-              isPublishedDataset('debt-issues.json', ctx.get('debt-issues.json'))
-            )) &&
-          (id !== 'P01' ||
-            !['state-budget.json', 'kfp-subsectors.json'].every(
-              (name) => ctx.exists(name) && isPublishedDataset(name, ctx.get(name)),
-            )),
-      ),
-    ),
-    `pending ids ${pyRepr(iterable(pending, kind(pending, core, 'pending')).sort())}`,
-  );
-  for (const [key, p] of entries(pending, kind(pending, core, 'pending'))) {
+  const routes = ctx.routes();
+  if ('pending' in core) {
+    const pending = get(core, 'pending');
     c.ok(
-      get(p, 'status', kind(p, pending, key)) === 'pending' &&
-        equal(get(p, 'id', kind(p, pending, key)), key) &&
-        ['title', 'reason', 'expected'].every((x) =>
-          strField(opt(p, x, undefined, kind(p, pending, key))),
+      equal(
+        iterable(pending, kind(pending, core, 'pending')).sort(),
+        Array.from({ length: 7 }, (_, i) => `P0${i + 1}`).filter(
+          (id) =>
+            (id !== 'P03' ||
+              !(
+                Array.isArray(ctx.get('ministries.json')?.items) &&
+                ctx
+                  .get('ministries.json')
+                  .items.some((item: any) => item?.programs?.tier === 'source-verified') &&
+                ['0100', '1800', '2300', '7400'].every(
+                  (code) =>
+                    ctx.exists(`ministries/${code}.json`) &&
+                    isPublishedDataset(
+                      `ministries/${code}.json`,
+                      ctx.get(`ministries/${code}.json`),
+                    ),
+                )
+              )) &&
+            (id !== 'P05' || !Object.hasOwn(ctx.get('execution.json').data, '2022')) &&
+            (id !== 'P06' ||
+              !(
+                ctx.exists('debt-issues.json') &&
+                isPublishedDataset('debt-issues.json', ctx.get('debt-issues.json'))
+              )) &&
+            (id !== 'P01' ||
+              !['state-budget.json', 'kfp-subsectors.json'].every(
+                (name) => ctx.exists(name) && isPublishedDataset(name, ctx.get(name)),
+              )),
         ),
-      `pending ${key}: shape`,
+      ),
+      `pending ids ${pyRepr(iterable(pending, kind(pending, core, 'pending')).sort())}`,
     );
+    for (const [key, p] of entries(pending, kind(pending, core, 'pending'))) {
+      c.ok(
+        get(p, 'status', kind(p, pending, key)) === 'pending' &&
+          equal(get(p, 'id', kind(p, pending, key)), key) &&
+          ['title', 'reason', 'expected'].every((x) =>
+            strField(opt(p, x, undefined, kind(p, pending, key))),
+          ),
+        `pending ${key}: shape`,
+      );
+      c.ok(
+        pyTruth(get(p, 'source', kind(p, pending, key))) &&
+          iterable(
+            get(p, 'source', kind(p, pending, key)),
+            kind(get(p, 'source', kind(p, pending, key)), p, 'source'),
+          ).every((x) => contains(src, x, kind(src, core, 'sources'))),
+        `pending ${key}: source keys`,
+      );
+    }
+    const p04 = opt(pending, 'P04', {}, kind(pending, core, 'pending')),
+      nas = get(nxt, 'asOf', kind(nxt, get(ex, 'pendingMonths'), 0)),
+      ny = pySlice(nas, null, kind(nas, nxt, 'asOf'), 4),
+      reason = opt(p04, 'reason', '', kind(p04, pending, 'P04')),
+      title = opt(p04, 'title', '', kind(p04, pending, 'P04'));
     c.ok(
-      pyTruth(get(p, 'source', kind(p, pending, key))) &&
-        iterable(
-          get(p, 'source', kind(p, pending, key)),
-          kind(get(p, 'source', kind(p, pending, key)), p, 'source'),
-        ).every((x) => contains(src, x, kind(src, core, 'sources'))),
-      `pending ${key}: source keys`,
+      pyMethod(title, 'startswith', kind(title, p04, 'title')).startsWith(
+        `Отчетът към ${pyMethod(nas, 'split', kind(nas, nxt, 'asOf'))
+          .split('-')
+          .reverse()
+          .join('.')} г.`,
+      ) &&
+        (reason ===
+          `Последният месечен отчет в портала е за ${monthName(latest(), 'month')} ${prefixText(get(latest(), 'asOf', kind(latest(), ex, 'latest')), 4, kind(get(latest(), 'asOf'), latest(), 'asOf'))} г. Отчетът за ${monthName(nxt, 'month')} ${pstr(ny)} г. не е включен.` ||
+          (contains(
+            reason,
+            `за ${monthName(nxt, 'month')} ${pstr(ny)} г. още не е добавен`,
+            kind(reason, p04, 'reason'),
+          ) &&
+            pyMethod(reason, 'endswith', kind(reason, p04, 'reason')).endsWith(
+              `е за ${monthName(latest(), 'month')} ${prefixText(get(latest(), 'asOf', kind(latest(), ex, 'latest')), 4, kind(get(latest(), 'asOf'), latest(), 'asOf'))} г.`,
+            ))),
+      `pending P04 must name the pending report ${pstr(nas, kind(nas, nxt, 'asOf'))} and the latest ${strAt(latest(), 'asOf', kind(latest(), ex, 'latest'))}`,
     );
   }
-  const p04 = opt(pending, 'P04', {}, kind(pending, core, 'pending')),
-    nas = get(nxt, 'asOf', kind(nxt, get(ex, 'pendingMonths'), 0)),
-    ny = pySlice(nas, null, kind(nas, nxt, 'asOf'), 4),
-    reason = opt(p04, 'reason', '', kind(p04, pending, 'P04')),
-    title = opt(p04, 'title', '', kind(p04, pending, 'P04'));
-  c.ok(
-    pyMethod(title, 'startswith', kind(title, p04, 'title')).startsWith(
-      `Отчетът към ${pyMethod(nas, 'split', kind(nas, nxt, 'asOf'))
-        .split('-')
-        .reverse()
-        .join('.')} г.`,
-    ) &&
-      (reason ===
-        `Последният месечен отчет в портала е за ${monthName(latest(), 'month')} ${prefixText(get(latest(), 'asOf', kind(latest(), ex, 'latest')), 4, kind(get(latest(), 'asOf'), latest(), 'asOf'))} г. Отчетът за ${monthName(nxt, 'month')} ${pstr(ny)} г. не е включен.` ||
-        (contains(
-          reason,
-          `за ${monthName(nxt, 'month')} ${pstr(ny)} г. още не е добавен`,
-          kind(reason, p04, 'reason'),
-        ) &&
-          pyMethod(reason, 'endswith', kind(reason, p04, 'reason')).endsWith(
-            `е за ${monthName(latest(), 'month')} ${prefixText(get(latest(), 'asOf', kind(latest(), ex, 'latest')), 4, kind(get(latest(), 'asOf'), latest(), 'asOf'))} г.`,
-          ))),
-    `pending P04 must name the pending report ${pstr(nas, kind(nas, nxt, 'asOf'))} and the latest ${strAt(latest(), 'asOf', kind(latest(), ex, 'latest'))}`,
-  );
   const n = get(core, 'counts'),
     mfiles = ctx.jsonFiles().filter((f) => f.startsWith('ministries/')),
     data = get(ex, 'data');
@@ -866,7 +871,7 @@ export function core(ctx: Context): Check {
     );
   }
   c.fact(
-    `core 2026: revenue ${fmt(get(get(k, 'revenue', kind(k, core, 'kpis')), 'execMln', kind(get(k, 'revenue', kind(k, core, 'kpis')), k, 'revenue')))} / ${fmt(get(get(k, 'revenue', kind(k, core, 'kpis')), 'planMln', kind(get(k, 'revenue', kind(k, core, 'kpis')), k, 'revenue')))}, expenditure ${fmt(get(get(k, 'expenditure', kind(k, core, 'kpis')), 'execMln', kind(get(k, 'expenditure', kind(k, core, 'kpis')), k, 'expenditure')))} / ${fmt(get(get(k, 'expenditure', kind(k, core, 'kpis')), 'planMln', kind(get(k, 'expenditure', kind(k, core, 'kpis')), k, 'expenditure')))}, balance ${fmt(get(get(k, 'balance', kind(k, core, 'kpis')), 'execMln', kind(get(k, 'balance', kind(k, core, 'kpis')), k, 'balance')))} / ${fmt(get(get(k, 'balance', kind(k, core, 'kpis')), 'planMln', kind(get(k, 'balance', kind(k, core, 'kpis')), k, 'balance')))}, debt ${fmt(get(kd, 'zddMln', kind(kd, k, 'debt')))}; counts ${pstr(get(n, 'budgets', kind(n, core, 'counts')), kind(get(n, 'budgets', kind(n, core, 'counts')), n, 'budgets'))} budgets, ${pstr(get(n, 'programs', kind(n, core, 'counts')), kind(get(n, 'programs', kind(n, core, 'counts')), n, 'programs'))} programs, ${pstr(get(n, 'municipalities', kind(n, core, 'counts')), kind(get(n, 'municipalities', kind(n, core, 'counts')), n, 'municipalities'))} municipalities; 7 pending blocks`,
+    `core 2026: revenue ${fmt(get(get(k, 'revenue', kind(k, core, 'kpis')), 'execMln', kind(get(k, 'revenue', kind(k, core, 'kpis')), k, 'revenue')))} / ${fmt(get(get(k, 'revenue', kind(k, core, 'kpis')), 'planMln', kind(get(k, 'revenue', kind(k, core, 'kpis')), k, 'revenue')))}, expenditure ${fmt(get(get(k, 'expenditure', kind(k, core, 'kpis')), 'execMln', kind(get(k, 'expenditure', kind(k, core, 'kpis')), k, 'expenditure')))} / ${fmt(get(get(k, 'expenditure', kind(k, core, 'kpis')), 'planMln', kind(get(k, 'expenditure', kind(k, core, 'kpis')), k, 'expenditure')))}, balance ${fmt(get(get(k, 'balance', kind(k, core, 'kpis')), 'execMln', kind(get(k, 'balance', kind(k, core, 'kpis')), k, 'balance')))} / ${fmt(get(get(k, 'balance', kind(k, core, 'kpis')), 'planMln', kind(get(k, 'balance', kind(k, core, 'kpis')), k, 'balance')))}, debt ${fmt(get(kd, 'zddMln', kind(kd, k, 'debt')))}; counts ${pstr(get(n, 'budgets', kind(n, core, 'counts')), kind(get(n, 'budgets', kind(n, core, 'counts')), n, 'budgets'))} budgets, ${pstr(get(n, 'programs', kind(n, core, 'counts')), kind(get(n, 'programs', kind(n, core, 'counts')), n, 'programs'))} programs, ${pstr(get(n, 'municipalities', kind(n, core, 'counts')), kind(get(n, 'municipalities', kind(n, core, 'counts')), n, 'municipalities'))} municipalities${'pending' in core ? '; 7 pending blocks' : ''}`,
   );
   return c;
 }
@@ -1186,7 +1191,7 @@ export function catalog(ctx: Context): Check {
       files: disk.length,
       real,
       mock,
-      pending: pend,
+      ...('pending' in n ? { pending: pend } : {}),
       primarySources: len(rawFiles, kind(rawFiles, cat, 'files')),
     };
   c.ok(

@@ -346,7 +346,6 @@ export function prepareExecution(options: PrepareExecutionOptions): ExecutionRes
           'лист „стартова“ на месечните отчети на МФ, редове 11–49, колони к.2–к.4 (натрупано от началото на годината)',
         asOf: last.asOf,
         unit: 'млн. €',
-        extra: { pending: ['P01', 'P02', 'P04', 'P05'] },
       },
     ),
     cols: [
@@ -362,9 +361,7 @@ export function prepareExecution(options: PrepareExecutionOptions): ExecutionRes
     pace,
     paceNote:
       'Дял (%) от изпълнението за цялата година, достигнат към края на месеца; служи за „изостава / изпреварва“.',
-    pendingMonths: [
-      { month: nextMonth, asOf: lastDay(nextYear, nextMonth), status: 'pending', id: 'P04' },
-    ],
+    pendingMonths: [{ month: nextMonth, asOf: lastDay(nextYear, nextMonth), status: 'pending' }],
     reconcile,
   });
   const provenance: ExecutionProvenance = {

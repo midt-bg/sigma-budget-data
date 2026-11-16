@@ -93,7 +93,6 @@ export interface FeedInput {
   population: Population;
   populationStat: JsonStat;
   populationAsOf: string;
-  pending: Record<string, { reason: string | null; expected: string }>;
   baseUrl?: string;
   /** Site identity from the editorial input metadata, including historical replays. */
   siteName: string;
@@ -366,13 +365,7 @@ export function buildFeed(input: FeedInput) {
       `Капиталовите разходи са ${formatPercent(h.capexPctPlan)} от годишния план. ${basis.citation}.`,
       `Нетното външно финансиране от международните капиталови пазари е ${formatMoney(h.newBorrowingMln)}, при ${formatMoney(h.newBorrowingPrevYearMln)} година по-рано.`,
     ];
-  const expected = ex.pendingMonths.map((p) => ({
-    id: p.id,
-    title: `Месечен отчет на КФП към края на ${monthName(p.month)} ${p.asOf.slice(0, 4)} г.`,
-    status: 'pending',
-    note: input.pending[p.id]!.reason,
-    expected: input.pending[p.id]!.expected,
-  }));
+  const expected: { title: string; status: string; note: string; expected: string }[] = [];
   const next = input.law.next;
   expected.push({
     title: next.title,

@@ -161,7 +161,7 @@ export async function executeRelease(context: Readonly<ExecutionContext>): Promi
     validation,
     ...(generatedIntermediates.length ? { generatedIntermediates } : {}),
     datasets: registry.datasets
-      .filter((d: any) => d.status !== 'pending' && d.id !== 'releases')
+      .filter((d: any) => d.id !== 'releases')
       .map((d: any) => ({
         id: d.id,
         action: d.id === 'gva-sectors' ? 'preserved-input' : 'built',

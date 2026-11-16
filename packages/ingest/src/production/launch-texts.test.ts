@@ -28,17 +28,7 @@ it('applies every launch revision to the historical builder wording', () => {
 });
 
 it('publishes the final texts and derives the RSS feed and search index from them', () => {
-  const p04 =
-    'Последният месечен отчет в портала е за септември 2026 г. Отчетът за октомври 2026 г. не е включен.';
-  expect(json('core.json').pending.P04.reason).toBe(p04);
-  expect(json('core.json').meta.title).toBe(
-    'Ядро: източници, показатели без данни и основни числа',
-  );
-  expect(json('feed.json').expected[0].note).toBe(p04);
-  expect(
-    json('catalog.json').datasets.find((dataset: { id: string }) => dataset.id === 'P04')
-      .description,
-  ).toBe(p04);
+  expect(json('core.json').meta.title).toBe('Ядро: източници и основни числа');
   const rss = Buffer.from(streams.get('feed.xml')!).toString();
   expect(rss).toContain('Данни от официални източници.');
   expect(rss).not.toMatch(/Прототип|отказ 403|още не е/);

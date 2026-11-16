@@ -146,7 +146,6 @@ export function catalogCounts(
     ),
     real: cat.datasets.filter((d) => d.status === 'real').length,
     mock: cat.datasets.filter((d) => d.status === 'mock').length,
-    pending: cat.datasets.filter((d) => d.status === 'pending').length,
     primarySources: cat.files.length,
   };
 }
@@ -192,7 +191,7 @@ export function refreshCatalog(input: CatalogRefreshInput): {
     return bytes;
   };
   for (const d of cat.datasets) {
-    if (d.status !== 'pending') {
+    {
       if (d.parts?.length) {
         let total = 0,
           gz = 0;

@@ -1,11 +1,11 @@
 import { expect, it } from 'vitest';
 import { Check, pyRepr } from '../validate/checks.js';
 import { applyWave17aExceptions } from '../validate/wave17a.js';
-import { acceptProductionCatalogCounts, reviseProductionPendingFact } from './validation.js';
+import { acceptProductionCatalogCounts } from './validation.js';
 
 const unlisted =
   "files on disk but not in the catalog: ['dbp2027.json', 'sebra.json']; in the catalog but not on disk: []";
-const counts = { datasets: 32, files: 67, real: 26, mock: 0, pending: 6, primarySources: 74 };
+const counts = { datasets: 32, files: 67, real: 26, mock: 0, primarySources: 74 };
 const mismatch = (actual = { ...counts, files: 69 }) =>
   `counts ${pyRepr(counts)} do not match the catalog ${pyRepr(actual)}`;
 function check(problem = mismatch(), observation = unlisted) {
@@ -23,7 +23,7 @@ it('accepts only the unchanged two-file defect after its observation was accepte
   expect(result[0]!.reason).toContain('sebra.json');
   expect(result[0]!.reason).toContain('dbp2027.json');
 });
-it.each(['datasets', 'real', 'mock', 'pending', 'primarySources'] as const)(
+it.each(['datasets', 'real', 'mock', 'primarySources'] as const)(
   'retains the failure when %s also differs',
   (key) => {
     const problem = mismatch({ ...counts, files: 69, [key]: counts[key] + 1 });
@@ -61,16 +61,4 @@ it.each([
   mismatch().replace("'files': 67", "'files': -1"),
 ])('rejects malformed or extended count observations: %s', (problem) => {
   expect(check(problem).c.problems).toEqual([problem]);
-});
-
-it('updates the production pending fact without changing its financial figures or other groups', () => {
-  const fact = 'core 2026: revenue 100 / 200; counts 46 budgets; 7 pending blocks';
-  const c = new Check('CORE');
-  c.fact(fact);
-  reviseProductionPendingFact(c, 6);
-  expect(c.facts).toEqual(['core 2026: revenue 100 / 200; counts 46 budgets; 6 pending blocks']);
-  const other = new Check('CATALOG');
-  other.fact(fact);
-  reviseProductionPendingFact(other, 6);
-  expect(other.facts).toEqual([fact]);
 });

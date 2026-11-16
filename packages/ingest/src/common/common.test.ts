@@ -27,7 +27,7 @@ import {
   formatDate,
   monthName,
 } from './format.js';
-import { sources, pendingDefinitions, pendingForExecution, pendingBlock } from './sources.js';
+import { sources } from './sources.js';
 import { metadata, span } from './metadata.js';
 import { compare } from '../parity/compare.js';
 
@@ -162,15 +162,8 @@ describe('common Python parity', () => {
     const old = { contract: { schema: 1 } };
     expect(executionNumbers(old)).toBe(old);
   });
-  it('preserves source and pending maps against Python', () => {
-    const pending = structuredClone(pendingDefinitions);
-    pendingForExecution(pending, execution());
-    parity('source-definitions.json', fixture('source-definitions.json'), {
-      sources,
-      pending,
-      block: pendingBlock(pending, 'P04', { note: 'test' }),
-    });
-    expect(() => pendingBlock(pending, 'missing')).toThrow();
+  it('preserves source declarations against Python', () => {
+    expect(sources).toEqual(fixture('source-definitions.json').sources);
   });
   it('formats shared display values against Python', () => {
     parity('format.json', fixture('format.json'), {

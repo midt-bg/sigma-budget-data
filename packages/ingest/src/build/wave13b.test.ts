@@ -142,3 +142,19 @@ it('publishes concrete official names from the name lists', () => {
     expect(rows.filter((row) => row.nameNote)).toEqual([]);
   }
 });
+
+it('omits unavailable dataset entries and their derived navigation', () => {
+  const streams = (result.outputs.get('publication-layers') as any).streams as Map<
+    string,
+    Uint8Array
+  >;
+  const read = (name: string) => JSON.parse(Buffer.from(streams.get(name)!).toString());
+  const catalog = read('catalog.json');
+  expect(catalog.datasets.filter((item: any) => item.status === 'pending')).toEqual([]);
+  expect(catalog.groups.some((group: any) => group.id === 'pending')).toBe(false);
+  expect(catalog.counts).not.toHaveProperty('pending');
+  expect(read('core.json')).not.toHaveProperty('pending');
+  expect(read('components.json')).not.toHaveProperty('monthlyByBudget');
+  expect(read('law.json')).not.toHaveProperty('pending');
+  expect(read('feed.json').expected.some((item: any) => item.id === 'P04')).toBe(false);
+});
