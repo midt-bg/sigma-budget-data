@@ -1,3 +1,4 @@
+import { tmpdir } from 'node:os';
 import { copyFixture as cpSync, fixturePath } from '../../test/support/copy-fixture.js';
 import {
   existsSync,
@@ -16,7 +17,7 @@ import { Context } from './context.js';
 import { runWave15, WAVE15_UNPORTED } from './wave15.js';
 const corpus = new URL('../../test/fixtures/validate15/corpus/', import.meta.url);
 it('runs the seven groups with exact scope and refuses unsupported selection', () => {
-  const presented = mkdtempSync(resolve('tmp/wave15-corpus-'));
+  const presented = mkdtempSync(join(tmpdir(), 'wave15-corpus-'));
   cpSync(corpus, presented, { recursive: true });
   try {
     const ctx = new Context(presented),
