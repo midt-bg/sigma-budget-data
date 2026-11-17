@@ -67,11 +67,6 @@ it('rejects malformed metadata and preserves Python truth for empty collections'
     buildCatalog({ ...state.buildInput, out: replace('outlook.json', missing) }),
   ).toThrow(/meta/);
   const invalid = structuredClone(original);
-  invalid.meta.pending = 'P01';
-  expect(() =>
-    buildCatalog({ ...state.buildInput, out: replace('outlook.json', invalid) }),
-  ).toThrow(/pending/);
-  invalid.meta.pending = {};
   invalid.meta.mock = {};
   invalid.meta.unit = {};
   invalid.meta.source = {};
@@ -79,7 +74,6 @@ it('rejects malformed metadata and preserves Python truth for empty collections'
   const entry = cat.datasets.find((d) => d.slug === 'outlook')!;
   expect(entry.mock).toBe(false);
   expect(entry.source).toEqual([]);
-  expect(entry).not.toHaveProperty('pending');
   expect(entry).not.toHaveProperty('unit');
 });
 it('metadata audit independently detects stale lengths, gzip, schema, sources, screens and counts', async () => {

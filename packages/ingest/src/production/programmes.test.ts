@@ -149,7 +149,6 @@ function supplementedContext(change?: (documents: any) => void) {
   documents['ministries.json'].meta.pending = [];
   documents['programs.json'].meta.pending = [];
   documents['core.json'] = structuredClone(originalGet('core.json'));
-  delete documents['core.json'].pending.P03;
   change?.(documents);
   ctx.get = (file: string) => documents[file] ?? originalGet(file);
   const exists = ctx.exists.bind(ctx);

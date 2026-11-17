@@ -8,6 +8,7 @@ import {
   type Extraction,
 } from '../build/annual-lineage.js';
 import { buildAnnualPeriods } from '../build/fiscal-annual.js';
+import { nameBudget2027 } from '../build/budget-names.js';
 import { buildBudget2027 } from '../build/budget-2027.js';
 import { debtProseMatches, pythonDigitPattern } from '../build/budget-prose.js';
 import { parsePythonJson, pythonNumberAt, pythonNumericText } from '../common/numbers.js';
@@ -539,6 +540,10 @@ export function budget2027(ctx: Context): Check {
       throw pythonError('ValueError', 'Invalid integer metadata: n');
   }
   const built = buildExpected(() => buildBudget2027(lineage, ctx.buildDate).budget);
+  // Full releases publish registry names; isolated historical validator fixtures
+  // contain only the bill and retain their source names.
+  if (ctx.exists('ministries.json') && ctx.exists('municipalities.json'))
+    nameBudget2027(built, ctx.get('ministries.json').items, ctx.get('municipalities.json').items);
   for (const file of [
     'outlook.json',
     'revenue.json',

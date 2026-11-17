@@ -49,8 +49,7 @@ export function auditCatalogMetadata(input: {
       if (shape.source !== undefined) d.source = [...shape.source];
       continue;
     }
-    if (d.status === 'pending' || !d.file || !['JSON', 'GeoJSON'].includes(d.format ?? ''))
-      continue;
+    if (!d.file || !['JSON', 'GeoJSON'].includes(d.format ?? '')) continue;
     const b = owners.get(d.file.slice('data/'.length));
     if (!b) throw new Error(`Missing owner ${d.file}`);
     const source = catalogSchema(b).source;

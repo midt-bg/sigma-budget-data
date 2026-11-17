@@ -128,3 +128,45 @@ it('reports a failed producer and skips its dependants while independent stages 
   });
   expect(update.outputs.has('publication-layers')).toBe(false);
 });
+
+it('publishes concrete official names from the name lists', () => {
+  const budget = (result.outputs.get('budget-2027') as any).budget;
+  expect(budget.budgets.bill['12'].name).toBe('Министерство на вътрешните работи');
+  expect(budget.budgets.bill['33'].name).toBe('Национална служба за охрана');
+  expect(budget.budgets.bill['32'].name).toBe('Комисия за противодействие на корупцията');
+  expect(budget.budgets.bill['32']).not.toHaveProperty('nameNote');
+  expect(budget.budgets.billMc['2'].name).toBe('Съдебна власт');
+  for (const rows of Object.values(budget.municipal) as any[][]) {
+    expect(rows.find((row) => row.name === 'Столична община')).toBeDefined();
+    expect(rows.find((row) => row.name === 'Добричка')).toBeDefined();
+    expect(rows.filter((row) => row.nameNote)).toEqual([]);
+  }
+});
+
+it('omits unavailable dataset entries and their derived navigation', () => {
+  const streams = (result.outputs.get('publication-layers') as any).streams as Map<
+    string,
+    Uint8Array
+  >;
+  const read = (name: string) => JSON.parse(Buffer.from(streams.get(name)!).toString());
+  const catalog = read('catalog.json');
+  expect(catalog.datasets.filter((item: any) => item.status === 'pending')).toEqual([]);
+  expect(catalog.groups.some((group: any) => group.id === 'pending')).toBe(false);
+  expect(catalog.counts).not.toHaveProperty('pending');
+  expect(read('core.json')).not.toHaveProperty('pending');
+  expect(read('components.json')).not.toHaveProperty('monthlyByBudget');
+  expect(read('law.json')).not.toHaveProperty('pending');
+  expect(read('feed.json').expected.some((item: any) => item.id === 'P04')).toBe(false);
+});
+
+it('keeps editorial links only to datasets in the active catalog', () => {
+  const raw = structuredClone((result.outputs.get('wording') as any).catalog);
+  const activeSlug = catalogActive(raw).datasets[0]!.slug;
+  for (const key of ['traps', 'methodology'])
+    raw[key][0].related = [activeSlug, 'p01', 'p02', 'p04', 'p06', 'absent-dataset', 'sebra'];
+  const active = catalogActive(raw);
+  for (const key of ['traps', 'methodology']) {
+    expect((active[key] as { related: string[] }[])[0]!.related).toEqual([activeSlug]);
+    expect(raw[key][0].related).toContain('absent-dataset');
+  }
+});

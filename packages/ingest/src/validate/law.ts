@@ -910,15 +910,16 @@ export function law(ctx: Context): Check {
     'documents',
     'proposals',
     'next',
-    'pending',
+    ...('pending' in data || 'pending' in m ? ['pending'] : []),
   ];
   c.ok(same(sorted(pyIter(data)), sorted(keys)), `law.json keys ${repr(sorted(pyIter(data)))}`);
   c.ok(
     required(m, 'id') === 'D10+D11' &&
       required<any>(m, 'status') === 'real' &&
       required(m, 'unit') === 'хил. €' &&
-      same(required<any>(m, 'pending'), ['P07']) &&
-      same(required<any>(data, 'pending'), ['P07']),
+      ((!('pending' in data) && !('pending' in m)) ||
+        (same(required<any>(m, 'pending'), ['P07']) &&
+          same(required<any>(data, 'pending'), ['P07']))),
     'meta id/status/unit/pending',
   );
   c.ok(

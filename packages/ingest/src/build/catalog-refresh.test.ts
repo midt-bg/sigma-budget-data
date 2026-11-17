@@ -86,7 +86,6 @@ describe('catalog refresh', () => {
             { code: 'y', file: 'data/ministries/y.json', bytes: 0, gzipBytes: 0 },
           ],
         },
-        { id: 'P01', slug: 'p01', status: 'pending', source: [], screens: [] },
       ],
     };
     const a = enc('{"x":[],"meta":{"source":["new"]}}'),
@@ -112,11 +111,10 @@ describe('catalog refresh', () => {
       gzipBytes: catalogGzipSize(x) + catalogGzipSize(y),
     });
     expect(result.catalog.counts).toEqual({
-      datasets: 3,
+      datasets: 2,
       files: 3,
       real: 2,
       mock: 0,
-      pending: 1,
       primarySources: 1,
     });
     expect(cat.datasets[0]!.bytes).toBe(0);
@@ -129,7 +127,7 @@ it('rejects missing runtime fields and values that JSON would silently omit', ()
   const base: CatalogDocument = {
     files: [],
     counts: {},
-    datasets: [{ id: 'P01', slug: 'p01', status: 'pending', source: [], screens: [] }],
+    datasets: [{ id: 'D01', slug: 'test', status: 'real', source: [], screens: [] }],
   };
   const input = {
     catalog: base,

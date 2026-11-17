@@ -31,13 +31,6 @@ export interface CatalogDefinition {
   mediaType?: string;
   search?: { period?: string; kw?: string };
 }
-export interface CatalogPending {
-  title: string;
-  reason: string;
-  source: string[];
-  screens: string[];
-  expected: string;
-}
 export interface CatalogOwner {
   object: Record<string, any>;
   bytes: Uint8Array;
@@ -45,7 +38,6 @@ export interface CatalogOwner {
 export interface CatalogBuildInput {
   definitions: readonly CatalogDefinition[];
   groups: readonly { id: string; label: string }[];
-  pending: Record<string, CatalogPending>;
   /** Already serialized owner-stage objects and the exact bytes to write. */
   out: ReadonlyMap<string, CatalogOwner>;
   texts: ReadonlyMap<string, Uint8Array>;
@@ -344,8 +336,7 @@ function entry(
       throw new Error(`Invalid ${field} metadata`);
     return value;
   };
-  const source = stringList(m.source, 'source'),
-    pending = stringList(m.pending, 'pending');
+  const source = stringList(m.source, 'source');
   if (truth(m.unit) && typeof m.unit !== 'string') throw new Error('Invalid unit metadata');
   const contains = d.contains ?? m.id.split('+').filter((s: string) => /^[DMP]\d{2}$/.test(s));
   const desc = d.desc.replace(/\{(\w+)\}/g, (_, key: string) => {
@@ -367,7 +358,6 @@ function entry(
     ...(raw !== undefined ? { bytes: raw, gzipBytes: gz } : {}),
     eager: !!d.eager,
     contains: [...contains],
-    ...(pending.length ? { pending: [...pending] } : {}),
     mock: truth(m.mock) || m.status === 'mock',
     ...(parts ? { parts } : {}),
     ...(schema.length ? { schema } : {}),
@@ -396,22 +386,6 @@ export function buildCatalog(input: CatalogBuildInput): {
     const e = entry(input, d, fct, meta);
     if (e) datasets.push(e);
     else skipped.push(d.file);
-  }
-  for (const id of Object.keys(input.pending).sort()) {
-    const p = input.pending[id]!;
-    datasets.push({
-      id,
-      slug: id.toLowerCase(),
-      title: p.title,
-      description: p.reason,
-      group: 'pending',
-      status: 'pending',
-      source: [...p.source],
-      eager: false,
-      contains: [id],
-      expected: p.expected,
-      mock: false,
-    });
   }
   const groups = input.groups.filter((g) => datasets.some((e) => e.group === g.id));
   const files = primaryFiles(input.primary);

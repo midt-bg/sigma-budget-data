@@ -3,7 +3,7 @@ import { resolve, join } from 'node:path';
 import { expect, it } from 'vitest';
 import { sha256 } from '../readers/workbooks/index.js';
 import { readExecutionReport } from '../readers/execution/report.js';
-import { readHistoricalReport, resolveProductionPending } from './supplements.js';
+import { readHistoricalReport } from './supplements.js';
 
 const root = resolve(import.meta.dirname, '../../../..');
 it('reads all 24 historical reports, checks exact source differences and preserves raw values', () => {
@@ -23,15 +23,6 @@ it('reads all 24 historical reports, checks exact source differences and preserv
   expect(january.warnings).toHaveLength(2);
   const path = join(root, 'data/originals/kfp_2023', january.filename);
   expect(() => readExecutionReport({ path, sha256: january.sha256 })).toThrow('fin=-balance');
-});
-it('resolves pending before every consumer without mutating authored declarations', () => {
-  const input = {
-    P04: { reason: 'отчет' },
-    P05: { reason: 'ориентир' },
-    P07: { reason: 'връзки' },
-  };
-  expect(resolveProductionPending(input)).toEqual({ P04: input.P04, P07: input.P07 });
-  expect(Object.keys(input)).toHaveLength(3);
 });
 
 it('rebuilds the complete production execution and provenance, preserving every pre-existing series and total', async () => {

@@ -54,14 +54,14 @@ import {
 import { executionNumbers } from '../build/context.js';
 import { buildOutlook } from '../build/fiscal.js';
 import { loadEditorialRoutes } from '../build/editorial.js';
-import { pendingFromExecution, zddTable } from '../build/aggregation-core.js';
+import { zddTable } from '../build/aggregation-core.js';
 import { orderedKeysFromJson } from '../build/aggregation-search.js';
 import type { Wave13bInput } from '../build/wave13b.js';
 import type { ExecutionContext } from '../release-build/types.js';
 import type { KfpEvidence } from '../validate/kfp.js';
 import type { GazetteBlock, LawKey } from '../build/law-types.js';
 import { authored } from './authored.js';
-import { prepareProductionExecution, resolveProductionPending } from './supplements.js';
+import { prepareProductionExecution } from './supplements.js';
 
 export const sha256 = (bytes: Uint8Array | string) =>
   createHash('sha256').update(bytes).digest('hex');
@@ -413,9 +413,6 @@ export async function loadProduction(
   const sebra = await readSebra(root, reader, receipts);
   const aggregate = {
     ...authored.aggregation,
-    pending: resolveProductionPending(
-      pendingFromExecution(authored.aggregation.pending, execution),
-    ),
   };
   const cat = authored.catalog;
   const manifest = json('data/originals/MANIFEST.json');
@@ -518,7 +515,6 @@ export async function loadProduction(
       law: lawCache,
       budgetCount: aggregate.budgetCount,
       sources: aggregate.sources,
-      pending: aggregate.pending,
       population: fiscal.population,
       populationAsOf: aggregate.populationAsOf,
       zdd: zddTable(tables.VI_1!.rows as any),
@@ -533,7 +529,6 @@ export async function loadProduction(
       population: fiscal.population,
       populationStat: parseEurostatSnapshot(pop.data.toString('utf8')),
       populationAsOf: aggregate.populationAsOf,
-      pending: aggregate.pending,
     },
     search: {
       authored: aggregate,
@@ -544,7 +539,6 @@ export async function loadProduction(
     catalog: {
       definitions: aggregate.catalogDefinitions,
       groups: aggregate.catalogGroups,
-      pending: aggregate.pending,
       primary: {
         manifest,
         manifestFiles: cat.manifestFiles,

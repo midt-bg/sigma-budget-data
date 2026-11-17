@@ -20,7 +20,7 @@ No runtime rule invokes the corresponding production builder. The sole build-lay
 
 ## Scope and evidence boundaries
 
-COMPONENTS checks: constituent budget identities, DOO/NZOK sums, law article 1 and headline comparisons, municipal totals, EU accounts, transfers, Sankey, national/EU/programme reconciliation, execution references, pending monthly split and notes. Its tolerances are unchanged. These are cross-dataset checks, not a new extraction of every law or ASBP source. The historical origin of the July component summary is still unknown. P02 remains pending without numbers.
+COMPONENTS checks: constituent budget identities, DOO/NZOK sums, law article 1 and headline comparisons, municipal totals, EU accounts, transfers, Sankey, national/EU/programme reconciliation, execution references and notes. Its tolerances are unchanged. These are cross-dataset checks, not a new extraction of every law or ASBP source. The historical origin of the July component summary is still unknown.
 
 RATES checks scenario recomputation from verbatim ASBP assumptions, legal income limits, tax shares, TZPB activities, minimum-income cells/nulls, changes, NAP category coverage, quotes and stored-verdict checks. When NAP bytes are available, its pin is required and an absent reader binding fails. A bound reader adds fund-by-fund reconciliation of six NAP rows, scenario comparisons, civil-servant effects, printed income limits, and all 19 category page/label checks. When the NAP original is absent, a fact explicitly states that the checks use ASBP strings and that stored NAP verdicts are not an independent PDF re-read.
 

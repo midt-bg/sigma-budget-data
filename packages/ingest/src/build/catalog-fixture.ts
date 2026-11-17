@@ -87,7 +87,6 @@ export async function loadCatalogFixture(path: string, buildDate: string) {
   const buildInput = {
     definitions: authored.catalogDefinitions,
     groups: authored.catalogGroups,
-    pending: authored.pending,
     out,
     texts: text,
     disk,

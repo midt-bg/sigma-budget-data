@@ -326,16 +326,6 @@ export function buildComponents(e: ComponentEvidence, buildDate: string) {
     interpolate(componentNotes[5]!, formatMoney(other.sumKhil[0]! / 1000)),
     componentNotes[6]!,
   ];
-  const pending = {
-    status: 'pending',
-    id: 'P02',
-    title: 'Месечно изпълнение по съставни бюджети (държавен бюджет, ДОО, НЗОК, общини)',
-    reason:
-      'Месечните отчети, които са извлечени, дават консолидираната програма, националния бюджет и европейските средства. Разбивката на националния бюджет по съставни бюджети е в отделни таблици на МФ, които още не са извлечени.',
-    expected: 'Отделни таблици към месечната информация за КФП, minfin.bg',
-    source: ['minfin'],
-    screens: ['S15'],
-  };
   return {
     meta: metadata('D07', 'Съставни бюджети и трансфери', buildDate, {
       status: 'real',
@@ -343,7 +333,6 @@ export function buildComponents(e: ComponentEvidence, buildDate: string) {
       sourceNote: `ЗДБ 2026 (ДВ бр. 69), ЗБДОО и ЗБНЗОК 2026 (ДВ бр. 68), мотиви към законопроекта (АСБП 2026–2028), месечен отчет на КФП към ${e.execution.latest.asOf.split('-').reverse().join('.')}`,
       asOf: '2026-07-31',
       unit: 'хил. €',
-      extra: { pending: ['P02'] },
     }),
     budgets: {
       state: stateOut,
@@ -356,9 +345,7 @@ export function buildComponents(e: ComponentEvidence, buildDate: string) {
     transfers,
     nationalVsEu: nve,
     sankey: { unit: 'млн. €', nodes: nodes.map(([id, name]) => ({ id, name })), links },
-    monthlyByBudget: pending,
     notes,
-    pending: ['P02'],
   };
 }
 export type ComponentsResult = ReturnType<typeof buildComponents>;

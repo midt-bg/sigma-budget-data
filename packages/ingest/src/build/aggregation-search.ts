@@ -26,7 +26,6 @@ type Group = (typeof SEARCH_GROUPS)[number];
 export type SearchRow = [number, string, string, string, string, string, string, string];
 interface Authored {
   sources: Record<string, unknown>;
-  pending: Record<string, { title: string; reason: string; expected: string }>;
   functionDefs: [string, string, string, string[]][];
   budgetInfo: Record<string, [string, ...unknown[]]>;
   catalogDefinitions: CatalogDefinition[];
@@ -283,8 +282,7 @@ export class SearchRows {
         (String(period) === '2025' && href.startsWith('#/dalg') ? '2025.report' : '2026.law');
     if (!t) throw new Error('search-index: missing title');
     if (!href.startsWith('#/')) throw new Error('search-index: invalid link');
-    if (!['real', 'mock', 'pending'].includes(status))
-      throw new Error('search-index: invalid status');
+    if (!['real', 'mock'].includes(status)) throw new Error('search-index: invalid status');
     const key = JSON.stringify([group, t, href]);
     if (this.seen.has(key)) return;
     this.seen.add(key);
@@ -316,7 +314,7 @@ const homoglyphs: Record<string, string> = Object.fromEntries(
     Array.from('АВСЕНКМОРТХУавсенкмортху')[i]!,
   ]),
 );
-const nameKey = (s: string) => {
+export const nameKey = (s: string) => {
   const v = norm(Array.from(s, (c) => homoglyphs[c] ?? c).join(''));
   const aliases: Record<string, string> = {
     добричка: 'добрич селска',
@@ -777,7 +775,7 @@ export function buildSearch(input: SearchInput) {
       if (o && typeof o.meta === 'object' && o.meta !== null) status = o.meta.status ?? 'real';
     }
     if (status === null) continue;
-    if (!['real', 'mock', 'pending'].includes(status)) status = 'real';
+    if (!['real', 'mock'].includes(status)) status = 'real';
     const s = d.search ?? {},
       ids = d.contains ?? [];
     rows.add(
@@ -789,19 +787,6 @@ export function buildSearch(input: SearchInput) {
       status,
       `#/danni/${d.slug}`,
       s.kw || words(d.slug.replaceAll('-', ' '), ...ids, d.file.split('/').at(-1)),
-    );
-  }
-  for (const id of Object.keys(a.pending).sort()) {
-    const p = a.pending[id]!;
-    rows.add(
-      'datasets',
-      p.title,
-      `Предстои · ${first(p.reason)}`,
-      '',
-      '',
-      'pending',
-      `#/danni/${id.toLowerCase()}`,
-      words(id, p.expected),
     );
   }
   const pr = obj<ProjectsDoc | null>('mock/projects.json', true);

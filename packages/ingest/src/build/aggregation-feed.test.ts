@@ -24,7 +24,6 @@ const make = (): FeedInput => ({
   population: read('inputs/population.json'),
   populationStat: parseJsonStat(text('archive/originals/eurostat/tps00001_BG.json')),
   populationAsOf: read('authored.json').populationAsOf,
-  pending: read('authored.json').pending,
 });
 describe('feed from frozen donor inputs', () => {
   it('rejects future or invalid dates, inconsistent debt and population', () => {

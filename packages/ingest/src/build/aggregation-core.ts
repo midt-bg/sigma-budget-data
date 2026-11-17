@@ -1,5 +1,5 @@
 import { metadata } from '../common/metadata.js';
-import { monthName, pythonRound } from '../common/format.js';
+import { pythonRound } from '../common/format.js';
 import { pythonNumericText } from '../common/numbers.js';
 import { clean } from '../io/data.js';
 
@@ -14,13 +14,6 @@ interface Population {
   latest: { date: string; persons: number };
   years: (string | number)[];
   persons: (string | number)[];
-}
-export interface PendingDefinition {
-  title: string | null;
-  reason: string | null;
-  expected: string;
-  source: string[];
-  screens: string[];
 }
 interface FunctionItem {
   id: string;
@@ -93,26 +86,6 @@ export function aggregationInt(value: unknown): number {
   throw new Error('invalid integer');
 }
 
-/** Derive P04 from the execution report before any aggregation builder runs. */
-export function pendingFromExecution(
-  pending: Record<string, PendingDefinition>,
-  execution: {
-    pendingMonths: { month: number; asOf: string }[];
-    latest: { month: number; asOf: string };
-  },
-): Record<string, PendingDefinition> {
-  const result = structuredClone(pending),
-    next = execution.pendingMonths[0]!,
-    last = execution.latest;
-  const [year, month, day] = next.asOf.split('-');
-  result.P04 = {
-    ...result.P04!,
-    title: `Отчетът към ${day}.${month}.${year} г. и следващите`,
-    reason: `Отчетът за ${monthName(next.month)} ${year} г. още не е добавен: страницата на МФ с месечните отчети се отваря само през браузър (отказ 403 към автоматични заявки), а последният наличен файл е за ${monthName(last.month)} ${last.asOf.slice(0, 4)} г.`,
-  };
-  return result;
-}
-
 /** Explicit dependencies, including the donor's DATA/glossary and cache fallbacks. */
 export interface CoreInput {
   buildDate: string;
@@ -128,7 +101,6 @@ export interface CoreInput {
   law: { sums: { budgets: number } };
   budgetCount: number;
   sources: Record<string, unknown>;
-  pending: Record<string, PendingDefinition>;
   population: Population;
   populationAsOf: string;
   zdd: ZddTable;
@@ -204,26 +176,8 @@ export function buildCore(input: CoreInput) {
     measures: measures.items.length,
     kfpReports: Object.values(execution.data).reduce((sum, d) => sum + aggregationInt(d.months), 0),
   };
-  const pending = Object.fromEntries(
-    Object.keys(input.pending)
-      .sort()
-      .map((id) => {
-        const d = input.pending[id]!;
-        return [
-          id,
-          {
-            status: 'pending',
-            id,
-            title: d.title,
-            reason: d.reason,
-            expected: d.expected,
-            source: [...d.source],
-          },
-        ];
-      }),
-  );
   const result = {
-    meta: metadata('core', 'Ядро: източници, предстоящи набори и основни числа', input.buildDate, {
+    meta: metadata('core', 'Ядро: източници и основни числа', input.buildDate, {
       source: ['asbp', 'kfp', 'eurostat'],
       sourceNote:
         'Числата са копирани от наборите, които ги притежават (Прогноза, Изпълнение, Дълг, Разходи, Приходи)',
@@ -248,7 +202,6 @@ export function buildCore(input: CoreInput) {
       },
     },
     sources: structuredClone(input.sources),
-    pending,
     counts,
     population: {
       year: popYear,

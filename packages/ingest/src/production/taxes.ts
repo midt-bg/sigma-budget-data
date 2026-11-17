@@ -1,5 +1,4 @@
 import consolidationDifferences from './taxes-consolidation-differences.json' with { type: 'json' };
-import { RESOLVED_PENDING } from './supplements.js';
 import { join } from 'node:path';
 import { metadata } from '../common/metadata.js';
 import type { ExecutionContext } from '../release-build/types.js';
@@ -234,10 +233,7 @@ function resolveBudgetMetadata(value: unknown): unknown {
     Object.entries(value).map(([key, entry]) => [
       key,
       key === 'meta' && entry && typeof entry === 'object' && Array.isArray((entry as any).pending)
-        ? {
-            ...entry,
-            pending: (entry as any).pending.filter((id: string) => !RESOLVED_PENDING.has(id)),
-          }
+        ? { ...entry, pending: [] }
         : resolveBudgetMetadata(entry),
     ]),
   );

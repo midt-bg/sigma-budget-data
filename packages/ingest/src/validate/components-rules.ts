@@ -54,9 +54,9 @@ export function components(ctx: Context): Check {
       'transfers',
       'nationalVsEu',
       'sankey',
-      'monthlyByBudget',
+      ...('monthlyByBudget' in d ? ['monthlyByBudget'] : []),
       'notes',
-      'pending',
+      ...('pending' in d ? ['pending'] : []),
     ],
     `components keys ${pyRepr(keys(d))}`,
   );
@@ -69,19 +69,21 @@ export function components(ctx: Context): Check {
       me.mock === false,
     'meta id / status / source / unit',
   );
-  c.ok(
-    equal(me.pending, ['P02']) && equal(d.pending, ['P02']),
-    'pending is P02 in meta and at the top',
-  );
-  c.ok(me.asOf === '2026-07-31' && me.retrieved === ctx.buildDate, 'meta asOf / retrieved');
-  const pending = dig(core, 'pending', 'P02');
-  // Historical core envelopes include screens; current core publishes only the data contract.
-  const monthly = keys(pending).includes('screens')
-    ? d.monthlyByBudget
-    : Object.fromEntries(
-        Object.entries(d.monthlyByBudget ?? {}).filter(([key]) => key !== 'screens'),
-      );
-  c.ok(equal(pending, monthly), 'core.pending.P02 equals components.monthlyByBudget');
+  if ('monthlyByBudget' in d) {
+    c.ok(
+      equal(me.pending, ['P02']) && equal(d.pending, ['P02']),
+      'pending is P02 in meta and at the top',
+    );
+    c.ok(me.asOf === '2026-07-31' && me.retrieved === ctx.buildDate, 'meta asOf / retrieved');
+    const pending = dig(core, 'pending', 'P02');
+    // Historical core envelopes include screens; current core publishes only the data contract.
+    const monthly = keys(pending).includes('screens')
+      ? d.monthlyByBudget
+      : Object.fromEntries(
+          Object.entries(d.monthlyByBudget ?? {}).filter(([key]) => key !== 'screens'),
+        );
+    c.ok(equal(pending, monthly), 'core.pending.P02 equals components.monthlyByBudget');
+  }
   const b = d.budgets;
   ordered(c, b, budgetKeys, `budgets keys ${pyRepr(keys(b))}`);
   for (const k of budgetKeys) {
@@ -700,20 +702,22 @@ export function components(ctx: Context): Check {
       );
       c.ok(execu.plan2026.coverage[col], 'execution split has an explicit law coverage reason');
     }
-  const mb = d.monthlyByBudget;
-  c.ok(
-    mb.status === 'pending' &&
-      mb.id === 'P02' &&
-      equal(keys(mb), ['status', 'id', 'title', 'reason', 'expected', 'source', 'screens']),
-    `monthlyByBudget: pending P02 keys ${pyRepr(keys(mb))}`,
-  );
-  c.ok(numbersIn(mb) === 0, 'monthlyByBudget: no numbers while pending');
-  c.ok(
-    ['title', 'reason', 'expected'].every((k) => text(mb[k])) &&
-      equal(mb.source, ['minfin']) &&
-      equal(mb.screens, ['S15']),
-    'monthlyByBudget: texts / source / screens',
-  );
+  if ('monthlyByBudget' in d) {
+    const mb = d.monthlyByBudget;
+    c.ok(
+      mb.status === 'pending' &&
+        mb.id === 'P02' &&
+        equal(keys(mb), ['status', 'id', 'title', 'reason', 'expected', 'source', 'screens']),
+      `monthlyByBudget: pending P02 keys ${pyRepr(keys(mb))}`,
+    );
+    c.ok(numbersIn(mb) === 0, 'monthlyByBudget: no numbers while pending');
+    c.ok(
+      ['title', 'reason', 'expected'].every((k) => text(mb[k])) &&
+        equal(mb.source, ['minfin']) &&
+        equal(mb.screens, ['S15']),
+      'monthlyByBudget: texts / source / screens',
+    );
+  }
   c.ok(
     Array.isArray(d.notes) && d.notes.length === 7 && d.notes.every(cleanText),
     'notes: seven non-empty strings',

@@ -123,7 +123,7 @@ export function readExecutionLaw(pdf: { bytes: Uint8Array; sha256: string }): Ex
 const PRODUCTION_UNLISTED_FILES = ['dbp2027.json', 'sebra.json'] as const;
 const UNLISTED_FILES_OBSERVATION =
   "files on disk but not in the catalog: ['dbp2027.json', 'sebra.json']; in the catalog but not on disk: []";
-const COUNT_KEYS = ['datasets', 'files', 'real', 'mock', 'pending', 'primarySources'];
+const COUNT_KEYS = ['datasets', 'files', 'real', 'mock', 'primarySources'];
 
 function countObservation(text: string): Record<string, number> | null {
   if (!text.startsWith('{') || !text.endsWith('}')) return null;
@@ -172,15 +172,6 @@ export function acceptProductionCatalogCounts(
     c.fact(`${found.length} accepted production catalog count exception(s): ${observation.reason}`);
   }
   return found;
-}
-
-/** Keep the legacy validator's financial facts; update only its pending count for production. */
-export function reviseProductionPendingFact(c: Check, pendingCount: number): void {
-  if (c.name !== 'CORE') return;
-  c.facts.forEach((fact, index) => {
-    if (fact.startsWith('core 2026:') && fact.endsWith('; 7 pending blocks'))
-      c.facts[index] = fact.replace(/7 pending blocks$/, `${pendingCount} pending blocks`);
-  });
 }
 
 export function validateProduction(
@@ -321,8 +312,6 @@ export function validateProduction(
   ];
   const result = runGroups(groups, ctx, wanted);
   for (const c of result.groups) {
-    if (c.name === 'CORE')
-      reviseProductionPendingFact(c, Object.keys(ctx.get('core.json').pending).length);
     applyExceptions(c, true);
     const accepted = applyWave17aExceptions(c, true);
     acceptProductionCatalogCounts(c, accepted);

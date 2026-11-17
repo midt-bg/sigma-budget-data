@@ -102,7 +102,9 @@ describe('search donor', () => {
   it('accepts exactly 249999 bytes and rejects 250000 bytes', () => {
     const edge = make(),
       measure = (edge.out['measures.json'] as any).items[0];
-    measure.text += ' ' + 'a'.repeat(531);
+    measure.text += ' a';
+    const size = Buffer.byteLength(JSON.stringify(buildSearch(edge)) + '\n');
+    measure.text += 'a'.repeat(249999 - size);
     const doc = buildSearch(edge);
     expect(Buffer.byteLength(JSON.stringify(doc) + '\n')).toBe(249999);
     measure.text += 'a';

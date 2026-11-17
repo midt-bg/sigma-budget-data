@@ -439,7 +439,7 @@ sources:
   live: false
   files: []
   limitations:
-  - named by the pending datasets P01, P02, P05, P06, P07 as the expected publisher; nothing is taken from it yet
+  - reference entry for the expected publisher; no files are registered under this source id
 - id: ec-oil
   title: 'ЕК, ГД „Енергетика“: седмичен бюлетин за цените на петролните продукти'
   publisher: ЕК, ГД „Енергетика“

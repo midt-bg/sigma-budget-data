@@ -7,7 +7,7 @@ import { parseJsonStat } from '../io/data.js';
 import { loadAnnex } from './annex.js';
 import { loadEditorialRoutes } from './editorial.js';
 import { executionNumbers } from './context.js';
-import { pendingFromExecution, zddTable } from './aggregation-core.js';
+import { zddTable } from './aggregation-core.js';
 import { editorialSiteName } from './aggregation-rss.js';
 import { orderedKeysFromJson } from './aggregation-search.js';
 import type { Wave13bInput } from './wave13b.js';
@@ -136,7 +136,6 @@ export async function loadWave13bFixture(path: string): Promise<Wave13bInput> {
   const rawExecution = json('aggregation/upstream/execution.json'),
     execution = executionNumbers(rawExecution);
   const authored = json('aggregation/authored.json');
-  authored.pending = pendingFromExecution(authored.pending, execution);
   const population = json('fiscal/inputs/data/inputs/population.json');
   const fiscal = {
     annex: loadAnnex(tables),
@@ -243,7 +242,6 @@ export async function loadWave13bFixture(path: string): Promise<Wave13bInput> {
       law: lawCache,
       budgetCount: authored.budgetCount,
       sources: authored.sources,
-      pending: authored.pending,
       population,
       populationAsOf: authored.populationAsOf,
       zdd: zddTable(tables.VI_1.rows),
@@ -260,7 +258,6 @@ export async function loadWave13bFixture(path: string): Promise<Wave13bInput> {
         raw('aggregation/archive/originals/eurostat/tps00001_BG.json').toString(),
       ),
       populationAsOf: authored.populationAsOf,
-      pending: authored.pending,
     },
     search: {
       authored,
@@ -272,7 +269,6 @@ export async function loadWave13bFixture(path: string): Promise<Wave13bInput> {
     catalog: {
       definitions: cat.catalogDefinitions,
       groups: cat.catalogGroups,
-      pending: cat.pending,
       primary: {
         manifest: manifestDoc,
         manifestFiles: cat.manifestFiles,
