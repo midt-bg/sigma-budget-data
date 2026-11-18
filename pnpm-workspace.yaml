@@ -7,3 +7,9 @@ onlyBuiltDependencies:
   - esbuild
   - workerd
   - sharp
+auditConfig:
+  ignoreGhsas:
+    # GHSA-fc5q-39xc-vjpf (picomatch <=4.0.7, ReDoS through crafted repeated extglob patterns): no patched version exists yet.
+    # picomatch is dev-only here (vitest and vite, through tinyglobby/fdir): it runs only in tests, with glob patterns from our
+    # config, never from downloaded sources; processing and releases do not use it. Remove this entry once picomatch is patched.
+    - GHSA-fc5q-39xc-vjpf
