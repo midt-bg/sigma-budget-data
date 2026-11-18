@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { Check, pyRepr } from '../validate/checks.js';
 import { applyWave17aExceptions } from '../validate/wave17a.js';
-import { acceptProductionCatalogCounts } from './validation.js';
+import { acceptProductionCatalogCounts, reviseProductionBudgetSummary } from './validation.js';
 
 const unlisted =
   "files on disk but not in the catalog: ['dbp2027.json', 'sebra.json']; in the catalog but not on disk: []";
@@ -61,4 +61,31 @@ it.each([
   mismatch().replace("'files': 67", "'files': -1"),
 ])('rejects malformed or extended count observations: %s', (problem) => {
   expect(check(problem).c.problems).toEqual([problem]);
+});
+
+it.each([
+  ['0 pending (P03)', '39 validated / 5 differ from the law; 92 policies'],
+  [
+    '4 pending (P03)',
+    '39 validated / 5 differ from the law / 4 without published programmes; 92 policies',
+  ],
+])(
+  'publishes meaningful availability wording for %s without changing checks',
+  (availability, expected) => {
+    const c = new Check('BUDGETS');
+    c.ok(true, 'numeric validation');
+    c.fact(`39 validated / 5 differ from the law / ${availability}; 92 policies`);
+    c.warn('source warning');
+    reviseProductionBudgetSummary(c);
+    expect(c.facts).toEqual([expected]);
+    expect(c.n).toBe(1);
+    expect(c.problems).toEqual([]);
+    expect(c.warnings).toEqual(['source warning']);
+  },
+);
+it('leaves other validator groups untouched', () => {
+  const c = new Check('PROGRAMS');
+  c.fact('4 pending (P03)');
+  reviseProductionBudgetSummary(c);
+  expect(c.facts).toEqual(['4 pending (P03)']);
 });
