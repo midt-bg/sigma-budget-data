@@ -174,6 +174,16 @@ export function acceptProductionCatalogCounts(
   return found;
 }
 
+/** Keep historical validator evidence intact; publish only meaningful availability wording. */
+export function reviseProductionBudgetSummary(c: Check): void {
+  if (c.name !== 'BUDGETS') return;
+  for (let i = 0; i < c.facts.length; i++)
+    c.facts[i] = c.facts[i]!.replace(' / 0 pending (P03)', '').replace(
+      /(\d+) pending \(P03\)/gu,
+      '$1 without published programmes',
+    );
+}
+
 export function validateProduction(
   context: Readonly<ExecutionContext>,
   prepared: PreparedProduction,
@@ -315,6 +325,7 @@ export function validateProduction(
     applyExceptions(c, true);
     const accepted = applyWave17aExceptions(c, true);
     acceptProductionCatalogCounts(c, accepted);
+    reviseProductionBudgetSummary(c);
   }
   const output = result.groups.map((c) => ({
     group: c.name,
