@@ -1,3 +1,5 @@
+import { parseXml, descendants, xmlText } from '../readers/documents/xml.js';
+import { buildWave13a } from '../build/wave13a.js';
 import { beforeAll, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
@@ -14,9 +16,10 @@ type Entry = {
   text: string;
   quote: string;
   law?: string;
-  page: number;
+  page?: number;
+  sourceLocation?: { member: string; paragraph: number; table: number; row: number };
   to?: number;
-  tablePage: number;
+  tablePage?: number;
 };
 const root = resolve(import.meta.dirname, '../../../..');
 const member = 'ZDBRB-2027/4-UMTBF-2027-2029-motivi.pdf';
@@ -30,6 +33,7 @@ let measures: Record<string, Entry[]>;
 let laws: Record<string, string>;
 let release: any;
 let provenance: any;
+let nativeParagraphs: string[] | undefined;
 const pages = new Map<number, string>();
 const json = async (path: string) => JSON.parse(await readFile(join(root, path), 'utf8'));
 beforeAll(async () => {
@@ -38,6 +42,40 @@ beforeAll(async () => {
   laws = loaded.LAWS;
   release = await json('data/release/budget2027.json');
   provenance = await json('data/release/budget2027-provenance.json');
+  const forecast = await json('data/inputs/budget_forecast_2027.json');
+  if (forecast.source.format === 'docx') {
+    const archive = await readFile(join(root, forecast.source.archive));
+    const nodes = [
+      ...descendants(parseXml(zipMember(archive, 'word/document.xml').toString('utf8'))),
+    ];
+    nativeParagraphs = nodes
+      .filter((n) => n.local === 'p')
+      .map((p) =>
+        norm(
+          [...descendants(p)]
+            .filter((n) => n.local === 't')
+            .map(xmlText)
+            .join(''),
+        ),
+      );
+    const outputs = buildWave13a({
+      forecast,
+      bill: await json('data/inputs/budget_bill_2027.json'),
+      archives: { forecast: archive, bill: archive },
+      legacy: Object.fromEntries(
+        await Promise.all(
+          ['outlook', 'revenue', 'expenditure', 'law'].map(async (k) => [
+            k,
+            await json(`data/release/${k}.json`),
+          ]),
+        ),
+      ),
+      buildDate: '2026-11-24',
+    } as any);
+    release = outputs['budget2027.json'];
+    provenance = outputs['budget2027-provenance.json'];
+    return;
+  }
   const bytes = zipMember(
     await readFile(
       join(
@@ -59,10 +97,19 @@ function each() {
   );
 }
 function assertQuote(entry: Entry) {
+  if (nativeParagraphs) {
+    expect(entry.page).toBeUndefined();
+    expect(entry.sourceLocation?.member).toBe('word/document.xml');
+    expect(nativeParagraphs[entry.sourceLocation!.paragraph], entry.id).toContain(
+      norm(entry.quote),
+    );
+    return;
+  }
+  if (entry.page == null) throw new Error('Missing source page');
   const last = entry.to ?? entry.page;
   expect(last, entry.id).toBeGreaterThanOrEqual(entry.page);
   const text = Array.from({ length: last - entry.page + 1 }, (_, i) =>
-    pages.get(entry.page + i),
+    pages.get(entry.page! + i),
   ).join(' ');
   expect(text, entry.id).toContain(norm(entry.quote));
   expect(pages.get(entry.page), entry.id).toContain(norm(entry.quote).slice(0, 60));
@@ -90,11 +137,20 @@ it('keeps starts aligned with each printed row in its position', () => {
   for (const { entry, row } of each())
     expect(norm(row.label).startsWith(norm(entry.starts)), entry.id).toBe(true);
 });
-it('finds every complete verbatim quote on its cited PDF pages and its start on the first page', () => {
+it('finds every complete verbatim quote at its original PDF or native Word address', () => {
   for (const { entry } of each()) assertQuote(entry);
 });
-it('binds tablePage to every published cell of the same measure', () => {
+it('binds physical table addresses to every published cell of the same measure', () => {
   for (const { entry, row } of each()) {
+    if (nativeParagraphs) {
+      expect(entry.tablePage).toBeUndefined();
+      for (const cell of Object.values(row.cells) as any[]) {
+        const loc = provenance.entries[cell.provenance].location;
+        expect(loc.table).toBe(entry.sourceLocation!.table);
+        expect(loc.row).toBe(entry.sourceLocation!.row);
+      }
+      continue;
+    }
     const actual = new Set(
       Object.values(row.cells).map((c: any) => provenance.entries[c.provenance].page),
     );

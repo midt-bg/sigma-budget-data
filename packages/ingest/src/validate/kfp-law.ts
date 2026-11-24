@@ -119,7 +119,7 @@ export function validateKfpLaw(
     // Lineage.f reads these independently printed fields before accepting the numeric cell.
     executionRequired(executionRequired(row, 'units'), 0);
     executionRequired(row, 'label');
-    executionRequired(row, 'page');
+    executionRequired(row, forecast.source.format === 'docx' ? 'location' : 'page');
     executionRequired(executionRequired(row, 'printed'), 0);
     const value = executionRequired(executionRequired(row, 'values'), 0);
     if (!isnum(value)) {
@@ -137,7 +137,7 @@ export function validateKfpLaw(
     periodKey: '2026.law',
     basis: 'adopted-law',
     source: ['budget2027'],
-    asOf: '2026-11-06',
+    asOf: forecast.source.publication ?? '2026-11-06',
     unit: 'млн. €',
     coverage,
     kfp: values,

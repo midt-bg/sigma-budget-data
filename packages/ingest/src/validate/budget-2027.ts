@@ -1,3 +1,4 @@
+import { verifyParliamentCells } from '../production/annual-word-validation.js';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
@@ -182,7 +183,12 @@ function counter(records: any[]): Map<string, number> {
       c /= 10n;
       scale--;
     }
-    const key = JSON.stringify([record.document, record.page, c.toString(), scale]);
+    const key = JSON.stringify([
+      record.document,
+      record.location ?? record.page,
+      c.toString(),
+      scale,
+    ]);
     result.set(key, (result.get(key) ?? 0) + 1);
   }
   return result;
@@ -382,11 +388,12 @@ export function municipalIdentities(check: Check, bill: any): void {
     );
 }
 /** Reject float-encoded indices and malformed count metadata before comparisons. */
-function assertCountMetadata(value: unknown): void {
+function assertCountMetadata(value: unknown, docx = false): void {
   function walk(node: unknown): void {
     if (node === null || typeof node !== 'object') return;
     for (const [key, item] of Object.entries(node)) {
       const required = ['year', 'page', 'rawRow', 'rawColumn'].includes(key);
+      if (docx && key === 'page' && item === null) continue;
       if (['row', 'n'].includes(key) && typeof item !== 'string' && typeof item !== 'number')
         throw pythonError('ValueError', `Invalid integer metadata: ${key}`);
       const optionalIndex = ['row', 'n'].includes(key) && typeof item === 'number';
@@ -490,7 +497,7 @@ export function budget2027(ctx: Context): Check {
     forecast: forecastArchive,
     bill: billArchive,
   });
-  assertCountMetadata(forecast);
+  assertCountMetadata(forecast, forecast.source.format === 'docx');
   for (const table of Object.values(forecast.tables)) {
     if (!Array.isArray(table.rows) || !Array.isArray(table.columns))
       throw pythonError('ValueError', 'Invalid forecast table');
@@ -525,7 +532,7 @@ export function budget2027(ctx: Context): Check {
     }
   };
   const annual = buildExpected(() => buildAnnualPeriods(forecast, lineage));
-  assertCountMetadata(bill);
+  assertCountMetadata(bill, bill.source.format === 'docx');
   for (const section of ['art52', 'art53'] as const)
     for (const row of bill.municipal[section]!.rows)
       if (typeof row.region !== 'string' || typeof row.name !== 'string')
@@ -551,7 +558,7 @@ export function budget2027(ctx: Context): Check {
     'budget2027.json',
     'budget2027-provenance.json',
   ])
-    assertCountMetadata(parsePythonJson(ctx.text(file)));
+    assertCountMetadata(parsePythonJson(ctx.text(file)), bill.source.format === 'docx');
   for (const [name, records] of Object.entries(annual)) {
     const actual = ctx.get(`${name}.json`).byPeriod;
     if (actual != null && (typeof actual !== 'object' || Array.isArray(actual)))
@@ -570,11 +577,23 @@ export function budget2027(ctx: Context): Check {
     'bill: exact source variants, periods, units and coverage',
   );
   const oracle = JSON.parse(
-    read('packages/ingest/src/validate/fixtures/budget_2027_cells.json').toString('utf8'),
+    read(
+      bill.source.format === 'docx'
+        ? 'packages/ingest/src/validate/fixtures/budget_2027_parliament_cells.json'
+        : 'packages/ingest/src/validate/fixtures/budget_2027_cells.json',
+    ).toString('utf8'),
   );
   checkOutputOracles(check, ctx, oracle.cells);
   checkLawIdentities(check, ctx);
   checkLineage(check, ctx, lineage);
+  if (bill.source.format === 'docx') {
+    const count = verifyParliamentCells(
+      archive(bill),
+      ctx.get('budget2027-provenance.json').entries,
+    );
+    check.ok(count > 0, 'Native Word/EMF physical source cells independently re-read');
+    check.fact(`${count} native source cells checked against original bytes`);
+  }
   forecastIdentities(check, forecast.tables);
   check.ok(
     isDeepStrictEqual(
@@ -587,9 +606,11 @@ export function budget2027(ctx: Context): Check {
     isDeepStrictEqual(new Set(Object.keys(built.budgets.billMc)), new Set(['1', '2'])),
     'two MC alternatives remain separate',
   );
+  const projects = bill.source.format === 'docx' ? 225 : 226;
   check.ok(
-    built.projects.length === 226 && new Set(built.projects.map((p: any) => p.id)).size === 226,
-    '226 unique projects',
+    built.projects.length === projects &&
+      new Set(built.projects.map((p: any) => p.id)).size === projects,
+    `${projects} unique projects`,
   );
   billIdentities(check, bill);
   municipalIdentities(check, bill);

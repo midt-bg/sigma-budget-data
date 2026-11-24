@@ -10,7 +10,7 @@ import { join, dirname } from 'node:path';
 import { runGraph } from '../build/graph.js';
 import { wave13bStages } from '../build/wave13b.js';
 import type { ExecutionContext, ExecutorResult } from '../release-build/types.js';
-import { reviseLaunchTexts, reviseProgrammeSources } from './launch-texts.js';
+import { reviseLaunchTexts, reviseProgrammeSources, reviseAnnualSources } from './launch-texts.js';
 import { loadProduction } from './loader.js';
 import { readTaxDatasets, withProductionBudgets, registerTaxCatalog } from './taxes.js';
 import { validateProduction } from './validation.js';
@@ -47,6 +47,10 @@ export async function executeRelease(context: Readonly<ExecutionContext>): Promi
   prepared.input.core.sources = reviseProgrammeSources(
     prepared.input.core.sources,
   ) as typeof prepared.input.core.sources;
+  prepared.input.core.sources = reviseAnnualSources(
+    prepared.input.core.sources,
+    prepared.input.fiscal.forecast.source,
+  );
   const graph = runGraph(
     withProductionBudgets(
       withProductionProgrammes(
@@ -82,7 +86,7 @@ export async function executeRelease(context: Readonly<ExecutionContext>): Promi
     eager: false,
     contains: ['D39'],
     mock: false,
-    asOf: '2026-11-06',
+    asOf: budget.publication,
     mediaType: 'application/json',
     source: ['budget2027'],
     file: 'data/measures2027.json',

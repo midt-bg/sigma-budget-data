@@ -107,12 +107,13 @@ function registeredPath(root: string, path: string): string {
 export async function readAnnualRegistration(
   registryPath: string,
   pinsPath: string,
+  sourceId = 'budget2027',
 ): Promise<AnnualRegistration> {
   const registry = parseYaml(
     (await read(resolve(registryPath), 2 * 1024 * 1024)).toString('utf8'),
   ) as Data;
   assert(Array.isArray(registry.sources), 'Invalid source registry');
-  const entries = registry.sources.filter((s: Data) => s.id === 'budget2027');
+  const entries = registry.sources.filter((s: Data) => s.id === sourceId);
   assert(entries.length === 1, 'budget2027 registration missing or duplicate');
   const source = entries[0];
   assert(
@@ -146,6 +147,7 @@ export async function readAnnualRegistration(
   assert(pins[archive] && pins[acquisition], 'Annual original pins missing');
   return {
     id: 'budget2027',
+    ...(source.format === 'docx' ? { format: 'docx' as const } : {}),
     inputPaths: { registry: resolve(registryPath), pins: resolve(pinsPath) },
     archive,
     archiveSha256: pins[archive]!,

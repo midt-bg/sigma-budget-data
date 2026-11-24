@@ -129,14 +129,15 @@ export interface ExecutionLawTable {
   columns: { scope: string; unit: string; vintage?: string; year: number }[];
   rows: {
     label: string;
-    page: number;
+    page?: number;
+    location?: { member: string; table: number; row: number; columns: number[] };
     units: string[];
     printed: (string | null)[];
     values: (number | null)[];
   }[];
 }
 export type ExecutionLawReader = (
-  pdf: OriginalBytes & { archive: string; archiveSha256: string; member: string },
+  pdf: OriginalBytes & { archive: string; archiveSha256: string; member: string; format?: string },
 ) => ExecutionLawTable;
 
 function raw(ctx: Context, name: string): Doc {
@@ -156,9 +157,10 @@ function moneyOk(c: Check, v: unknown, places: number, where: string): void {
 function physicalLaw(table: ExecutionLawTable) {
   return {
     columns: table.columns,
-    rows: table.rows.map(({ label, page, units, printed, values }) => ({
+    rows: table.rows.map(({ label, page, location, units, printed, values }) => ({
       label,
       page,
+      ...(location ? { location } : {}),
       units,
       printed,
       values,
@@ -176,27 +178,30 @@ function expectedPlan(ctx: Context, c: Check, reader?: ExecutionLawReader): Doc 
   const archiveBytes = readFileSync(safePath(ctx.root, source.archive));
   if (
     sha256(archiveBytes) !== pins.get(source.archive) ||
-    sha256(archiveBytes) !== source.archive_sha256
+    sha256(archiveBytes) !== (source.archive_sha256 ?? source.sha256)
   )
     throw new Error('pinned forecast archive checksum mismatch');
   const pdf = zipMember(archiveBytes, source.member);
-  if (sha256(pdf) !== source.pdf_sha256)
+  if (sha256(pdf) !== (source.pdf_sha256 ?? source.memberSha256))
     throw new Error('pinned forecast PDF member checksum mismatch');
   let table: ExecutionLawTable = input.tables[lawTable];
   if (reader) {
     table = reader({
       path: source.member,
-      sha256: source.pdf_sha256,
+      sha256: source.pdf_sha256 ?? source.memberSha256,
       bytes: pdf,
       archive: source.archive,
-      archiveSha256: source.archive_sha256,
+      archiveSha256: source.archive_sha256 ?? source.sha256,
       member: source.member,
+      ...(source.format ? { format: source.format } : {}),
     });
     c.ok(
       equal(physicalLaw(table), physicalLaw(input.tables[lawTable])),
       'independent Annex 1 law table differs from pinned extraction',
     );
-    c.fact('independent Annex 1 PDF reader ran on the pinned archive member');
+    c.fact(
+      `independent Annex 1 ${source.format === 'docx' ? 'Word XML' : 'PDF'} reader ran on the pinned archive member`,
+    );
   } else
     c.fact(
       'Annex 1 PDF reader not bound: locators checked against pinned extraction and authenticated archive/member bytes; no PDF re-extraction claimed',
@@ -210,8 +215,11 @@ function expectedPlan(ctx: Context, c: Check, reader?: ExecutionLawReader): Doc 
     if (
       !row ||
       !isnum(row.values[0]) ||
-      !Number.isInteger(row.page) ||
-      row.page < 1 ||
+      !(source.format === 'docx'
+        ? row.location?.member === source.member &&
+          Number.isInteger(row.location?.table) &&
+          Number.isInteger(row.location?.row)
+        : Number.isInteger(row.page) && row.page! >= 1) ||
       !text(row.label) ||
       !text(row.printed[0]) ||
       row.units[0] !== 'млн. €'
@@ -227,7 +235,7 @@ function expectedPlan(ctx: Context, c: Check, reader?: ExecutionLawReader): Doc 
       row: row.label,
       label: row.label,
       column,
-      page: row.page,
+      ...(row.location ? { location: row.location } : { page: row.page }),
       printed: row.printed[0],
       rowIndex: index,
     };
@@ -248,12 +256,13 @@ function expectedPlan(ctx: Context, c: Check, reader?: ExecutionLawReader): Doc 
   return {
     kfp: {
       source: 'budget2027',
+      ...(source.format ? { format: source.format, publication: source.publication } : {}),
       archive: source.archive,
-      archiveSha256: source.archive_sha256,
+      archiveSha256: source.archive_sha256 ?? source.sha256,
       member: source.member,
-      memberSha256: source.pdf_sha256,
+      memberSha256: source.pdf_sha256 ?? source.memberSha256,
       input: 'budget_forecast_2027.json',
-      sha256: source.pdf_sha256,
+      sha256: source.pdf_sha256 ?? source.memberSha256,
       periodKey: '2026.law',
       basis: 'adopted-law',
       table: lawTable,
@@ -437,7 +446,15 @@ export function executionIntegrity(ctx: Context, reader?: ExecutionLawReader): C
   }
   for (const [rid, loc] of Object.entries(kfpPlan.rows ?? {}) as [string, Doc][])
     c.ok(
-      (loc.cells ?? [loc]).every((x: Doc) => Number.isInteger(x.page) && x.row),
+      (loc.cells ?? [loc]).every(
+        (x: Doc) =>
+          x.row &&
+          (kfpPlan.format === 'docx'
+            ? x.location?.member === 'word/document.xml' &&
+              Number.isInteger(x.location.table) &&
+              Number.isInteger(x.location.row)
+            : Number.isInteger(x.page)),
+      ),
       `${pname}: plan2026.kfp.${rid} needs a page and a row`,
     );
   c.fact(

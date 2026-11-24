@@ -29,13 +29,16 @@ it('rebuilds the complete production execution and provenance, preserving every 
   const { readExecutionAnnual } = await import('../readers/execution/annual.js');
   const { prepareExecutionFiles } = await import('../readers/execution/producer.js');
   const { prepareProductionExecution } = await import('./supplements.js');
-  const fixture = join(root, 'packages/ingest/test/fixtures/wave18');
+  const forecast = JSON.parse(
+    readFileSync(join(root, 'data/inputs/budget_forecast_2027.json'), 'utf8'),
+  );
+  const bill = JSON.parse(readFileSync(join(root, 'data/inputs/budget_bill_2027.json'), 'utf8'));
   const pin = (path: string) => ({ path, sha256: sha256(readFileSync(path)) });
   const annual = {
-    forecast: pin(join(fixture, 'data/inputs/budget_forecast_2027.json')),
-    bill: pin(join(fixture, 'data/inputs/budget_bill_2027.json')),
-    forecastArchive: pin(join(fixture, 'data/originals/budget_2027/ZDBRB-2027.zip')),
-    billArchive: pin(join(fixture, 'data/originals/budget_2027/ZDBRB-2027.zip')),
+    forecast: pin(join(root, 'data/inputs/budget_forecast_2027.json')),
+    bill: pin(join(root, 'data/inputs/budget_bill_2027.json')),
+    forecastArchive: pin(join(root, forecast.source.archive)),
+    billArchive: pin(join(root, bill.source.archive)),
     historicalAnnex3: pin(
       join(
         root,

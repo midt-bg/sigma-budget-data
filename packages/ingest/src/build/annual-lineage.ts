@@ -3,6 +3,8 @@ import { inflateRawSync } from 'node:zlib';
 import { decimalSum, type AnnualCell, type AnnualForecast } from './fiscal-annual.js';
 
 export interface SourceDescriptor {
+  format?: 'docx';
+  publication?: string;
   archive: string;
   member: string;
   archive_sha256?: string | null;
@@ -63,6 +65,8 @@ export interface BillExtraction {
   articles: Record<string, { text: string; page: number }[]>;
 }
 export interface DocumentRecord {
+  format?: 'docx';
+  publication?: string;
   source: 'budget2027';
   archive: string;
   archiveSha256: string;
@@ -164,6 +168,7 @@ export function verifyDocument(
     member: source.member,
     memberSha256: memberHash,
     input,
+    ...(source.format ? { format: source.format, publication: source.publication } : {}),
   };
 }
 export function pointer(object: unknown, path: string): any {
@@ -262,11 +267,18 @@ export class AnnualLineage {
     if (typeof unit !== 'string' || !unit || unit !== expectedUnit)
       throw new Error(`Wrong unit in ${table}`);
     if (
-      typeof row.page !== 'number' ||
+      (typeof row.page !== 'number' && !(this.inputs.F.source.format === 'docx' && row.location)) ||
       !Array.isArray(row.printed) ||
       typeof row.printed[columnIndex] !== 'string'
     )
       throw new Error(`Missing physical evidence in ${table}`);
+    let location = row.location;
+    if (location && Array.isArray(location.offsets)) {
+      const { offsets, ...address } = location;
+      const offset = offsets[columnIndex];
+      if (!Number.isSafeInteger(offset)) throw new Error('Missing EMF source offset');
+      location = { ...address, offset };
+    }
     return this.leaf(
       'F',
       `/tables/${table}/rows/${rowIndex}/values/${columnIndex}`,
@@ -278,8 +290,9 @@ export class AnnualLineage {
         row: rowIndex,
         label: pointer(row, '/label'),
         column,
-        page: row.page,
+        ...(typeof row.page === 'number' ? { page: row.page } : {}),
         printed: row.printed[columnIndex],
+        ...(location ? { location } : {}),
       },
     );
   }

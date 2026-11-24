@@ -478,8 +478,11 @@ export function buildMeasures2027(input: Measures2027Source, budget: any, date: 
   return {
     meta: metadata('D39', 'Мерки в бюджета за 2027 г.', date, {
       source: ['budget2027'],
-      sourceNote: 'АСБП 2027–2029, таблици II-7 и II-8 и мотиви, стр. 44–50',
-      asOf: '2026-11-06',
+      sourceNote:
+        budget.publication === '2026-11-16'
+          ? 'АСБП 2027–2029, внесена в Народното събрание на 16.11.2026, таблици II-7 и II-8 и мотиви.'
+          : 'АСБП 2027–2029, таблици II-7 и II-8 и мотиви, стр. 44–50',
+      asOf: budget.publication ?? '2026-11-06',
       unit: 'млн. €',
     }),
     ...input,

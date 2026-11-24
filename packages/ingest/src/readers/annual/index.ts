@@ -8,12 +8,16 @@ import {
 import { readPdf, assert, type PdfLimits } from '../pdf/index.js';
 import { extractForecast } from './forecast.js';
 import { extractBill, type Data } from './bill.js';
+import { readParliamentDocument } from './parliament-document.js';
+import { extractParliamentForecast } from './parliament-forecast.js';
+import { extractParliamentBill } from './parliament-bill.js';
 export { extractForecast, forecastNumber } from './forecast.js';
 export { extractBill, billNumber } from './bill.js';
 export { serializeAnnual } from './json.js';
 export { prepareAnnual, readAnnualRegistration, safePath } from './prepare.js';
 export type { AnnualPreparationOptions, AnnualPreparationReceipt } from './prepare.js';
 export interface AnnualRegistration {
+  format?: 'docx';
   id: 'budget2027';
   /** Files read to construct this registration, protected by filesystem preparation. */
   inputPaths?: { registry: string; pins: string };
@@ -77,6 +81,47 @@ export function extractAnnual2027(options: AnnualExtractionOptions): AnnualExtra
     r.members.length === 2 && new Set(r.members.map((m) => m.role)).size === 2,
     'Annual roles missing or duplicate',
   );
+  if (r.format === 'docx') {
+    for (const role of ['forecast', 'bill'] as const) {
+      const registered = r.members.find((m) => m.role === role)!;
+      assert(
+        registered.archive === r.archive && registered.member === 'word/document.xml',
+        'Wrong parliamentary member',
+      );
+      const member = zipMember(archive, registered.member);
+      const pins = record.members?.filter((m: Data) => m.name === registered.member);
+      assert(
+        pins?.length === 1 &&
+          pins[0].sha256 === registered.sha256 &&
+          pins[0].bytes === member.length &&
+          sha256(member) === registered.sha256,
+        'Parliamentary member pin mismatch',
+      );
+    }
+    const document = readParliamentDocument(archive);
+    const source = {
+      archive: r.archive,
+      sha256: r.archiveSha256,
+      member: 'word/document.xml',
+      memberSha256: document.source.memberSha256,
+      format: 'docx' as const,
+      publication: document.source.publication,
+    };
+    return {
+      forecast: extractParliamentForecast(document, source) as AnnualExtractions['forecast'],
+      bill: extractParliamentBill(document, source) as AnnualExtractions['bill'],
+      evidence: {
+        schema: 1,
+        buildDate,
+        sourceId: r.id,
+        format: 'docx',
+        archive: { path: r.archive, sha256: r.archiveSha256, bytes: archive.length },
+        physicalTables: document.tables.length,
+        embeddedTables: document.embedded.map(({ member, sha256 }) => ({ member, sha256 })),
+        method: 'OOXML physical tables and EMR_EXTTEXTOUTW records; no PDF page geometry inferred',
+      },
+    };
+  }
   const decoded: Partial<
     Record<'forecast' | 'bill', { source: SourceDescriptor; pdf: Uint8Array }>
   > = {};

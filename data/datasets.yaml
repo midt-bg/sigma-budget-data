@@ -457,7 +457,7 @@ datasets:
   - rates
   - sebra
   schema: docs/data-spec.md
-  period: 2026-01-31 … 2026-11-06
+  period: 2026-01-31 … 2026-11-16
   scope: the site
   rebuild: ./budget build
   checked: '2026-11-05'
@@ -482,7 +482,7 @@ datasets:
   - rates
   - sebra
   schema: docs/data-spec.md
-  period: 2026-01-31 … 2026-11-06
+  period: 2026-01-31 … 2026-11-16
   scope: the site
   rebuild: ./budget build
   checked: '2026-11-05'
@@ -605,7 +605,7 @@ datasets:
   - data/inputs/budget_bill_2027.json
   schema: docs/data-spec.md
   period: 2026–2029
-  scope: MF publication 2026-11-06; bill and forecast are separate
+  scope: Parliamentary publication 2026-11-16; bill and forecast are separate
   unit: хил. € / млн. € / %
   rebuild: ./budget build
   limitations:
@@ -623,7 +623,7 @@ datasets:
   - data/inputs/budget_bill_2027.json
   schema: docs/data-spec.md
   period: 2026–2029
-  scope: MF publication 2026-11-06; bill and forecast are separate
+  scope: Parliamentary publication 2026-11-16; bill and forecast are separate
   unit: хил. € / млн. € / %
   rebuild: ./budget build
   limitations:

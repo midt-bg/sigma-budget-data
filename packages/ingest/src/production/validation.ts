@@ -1,3 +1,4 @@
+import { readExecutionLawXml, verifyParliamentQuotes } from './annual-word-validation.js';
 import { verifyPublishedProgrammes } from './programmes.js';
 import { programmeReferences } from '@sigma-budget/dataset-schema';
 import { verifyDebtCells } from './debt-cells.js';
@@ -251,13 +252,18 @@ export function validateProduction(
     { name: 'CATALOG', description: 'actual owner inventory and gzip/schema facts', run: catalog },
     {
       name: 'BUDGET2027',
-      description: 'physical annual PDF gates and publication rules',
+      description: 'physical annual document gates and publication rules',
       run(c) {
         const check = budget2027(c);
+        if (prepared.annual.bill.source.format === 'docx') {
+          const archive = readFileSync(join(sourceRoot, prepared.annual.bill.source.archive));
+          const count = verifyParliamentQuotes(archive, c.get('measures2027.json').MEASURES_2027);
+          check.ok(count === 36, 'Every current measure quote matches its native Word paragraph');
+        }
         for (const role of ['forecast', 'bill'] as const)
           check.ok(
             prepared.annual[role].tables !== undefined,
-            'physical ' + role + ' PDF was decoded and freshness verified',
+            'physical ' + role + ' document was decoded and freshness verified',
           );
         return check;
       },
@@ -284,7 +290,12 @@ export function validateProduction(
         }
         return expected;
       },
-      executionLaw: readExecutionLaw,
+      executionLaw: (original) => {
+        if (sha256(original.bytes) !== original.sha256) throw new Error('Annex 1 member changed');
+        return original.format === 'docx'
+          ? readExecutionLawXml(original.bytes)
+          : readExecutionLaw(original);
+      },
     }),
     {
       name: 'REGISTRY',

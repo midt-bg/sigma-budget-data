@@ -7,6 +7,7 @@ export interface AnnualColumn {
   unit?: string;
 }
 export interface AnnualRow {
+  location?: Record<string, unknown>;
   label: string;
   values: (number | null)[];
   units: string[];
@@ -18,6 +19,7 @@ export interface AnnualTable {
   rows: AnnualRow[];
 }
 export interface AnnualForecast {
+  publication?: string;
   tables: Record<string, AnnualTable>;
 }
 export interface AnnualCell {
@@ -106,7 +108,7 @@ export function buildAnnualPeriods(
       year: Number(period.slice(0, 4)),
       status,
       vintage,
-      publication: '2026-11-06',
+      publication: forecast.publication ?? '2026-11-06',
       sourceRefs: ['budget2027'],
       series: {},
       rows: [],

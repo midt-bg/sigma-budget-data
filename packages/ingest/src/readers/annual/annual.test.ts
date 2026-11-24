@@ -21,11 +21,13 @@ let temp: string,
   acquisition: Buffer,
   result: AnnualExtractions;
 const date = '2026-11-10';
+const legacy = join(root, 'packages/ingest/test/fixtures/fiscal/inputs');
 beforeAll(async () => {
   temp = await mkdtemp(join(tmpdir(), 'sigma-annual-'));
   registration = await readAnnualRegistration(
     join(root, 'data/sources.yaml'),
     join(root, 'data/originals.sha256'),
+    'budget2027-20261106',
   );
   archive = await readFile(join(root, registration.archive));
   acquisition = await readFile(join(root, registration.acquisition));
@@ -36,7 +38,7 @@ afterAll(async () => {
 });
 it('decodes the actual archive and matches both complete independent pinned Python extractions exactly', async () => {
   for (const role of ['forecast', 'bill'] as const) {
-    const bytes = await readFile(join(root, `data/inputs/budget_${role}_2027.json`));
+    const bytes = await readFile(join(legacy, `data/inputs/budget_${role}_2027.json`));
     expect(() => assertFreshAnnual(bytes, result[role], role)).not.toThrow();
   }
   expect(result.forecast.checks).toHaveLength(2775);
@@ -71,14 +73,14 @@ it('verifies real existing Python intermediates byte-for-byte unchanged', async 
   await mkdir(join(out, 'data/inputs'), { recursive: true });
   for (const role of ['forecast', 'bill'])
     await cp(
-      join(root, `data/inputs/budget_${role}_2027.json`),
+      join(legacy, `data/inputs/budget_${role}_2027.json`),
       join(out, `data/inputs/budget_${role}_2027.json`),
     );
   const receipt = await prepareAnnual({ sourceRoot: root, registration, out, buildDate: date });
   expect(receipt.outputs.map((o) => o.action)).toEqual(['verified', 'verified']);
   expect(receipt.compatibility).toHaveLength(1);
   for (const o of receipt.outputs)
-    expect(await readFile(join(out, o.path))).toEqual(await readFile(join(root, o.path)));
+    expect(await readFile(join(out, o.path))).toEqual(await readFile(join(legacy, o.path)));
 }, 120_000);
 it('fails a stale second gate before creating the absent first intermediate or changing existing bytes', async () => {
   const out = join(temp, 'stale');
