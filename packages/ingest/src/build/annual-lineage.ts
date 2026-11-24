@@ -272,6 +272,13 @@ export class AnnualLineage {
       typeof row.printed[columnIndex] !== 'string'
     )
       throw new Error(`Missing physical evidence in ${table}`);
+    let location = row.location;
+    if (location && Array.isArray(location.offsets)) {
+      const { offsets, ...address } = location;
+      const offset = offsets[columnIndex];
+      if (!Number.isSafeInteger(offset)) throw new Error('Missing EMF source offset');
+      location = { ...address, offset };
+    }
     return this.leaf(
       'F',
       `/tables/${table}/rows/${rowIndex}/values/${columnIndex}`,
@@ -285,7 +292,7 @@ export class AnnualLineage {
         column,
         ...(typeof row.page === 'number' ? { page: row.page } : {}),
         printed: row.printed[columnIndex],
-        ...(row.location ? { location: row.location } : {}),
+        ...(location ? { location } : {}),
       },
     );
   }

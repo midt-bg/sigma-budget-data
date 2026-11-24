@@ -89,7 +89,7 @@ export function verifyParliamentCells(archive: Uint8Array, entries: Record<strin
       const col = Number(entry.extraction.split('/').at(-1));
       raw = images
         .get(loc.member)!
-        .find((r) => r.offset === loc.offsets[col] && r.y === loc.y)?.text;
+        .find((r) => r.offset === (loc.offset ?? loc.offsets[col]) && r.y === loc.y)?.text;
     }
     if (raw === undefined || number(raw) !== number(entry.printed))
       throw new Error('Parliamentary physical cell differs: ' + entry.output);

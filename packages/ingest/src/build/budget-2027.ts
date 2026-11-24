@@ -71,7 +71,7 @@ function physicalFinder(bill: BillExtraction) {
   const printedValues = new Map<string, Map<string, string>>();
   return (row: any, path: string, column: number | null): Physical => {
     const { value, text } = valueAt(bill, path);
-    if (bill.source.format === 'docx' && row.location) {
+    if (bill.source?.format === 'docx' && row.location) {
       const table = bill.tables.find((t) => t.id === row.table);
       if (!table) throw new Error('Missing DOCX physical table');
       const address = row.location;
