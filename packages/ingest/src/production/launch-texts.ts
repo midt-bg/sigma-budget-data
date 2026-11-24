@@ -168,3 +168,24 @@ export function reviseProgrammeSources(value: unknown): unknown {
   if (used.size !== 1) throw new Error('Stale programme source wording');
   return result;
 }
+
+/** Keep historical source definitions intact while citing the active annual original. */
+export function reviseAnnualSources<T extends Record<string, any>>(
+  sources: T,
+  source: { format?: string; publication?: string },
+): T {
+  if (source.format !== 'docx') return sources;
+  if (source.publication !== '2026-11-16' || !sources.budget2027)
+    throw new Error('Unsupported parliamentary source citation');
+  return {
+    ...sources,
+    budget2027: {
+      ...sources.budget2027,
+      publisher: 'Министерство на финансите; Народно събрание',
+      url: 'https://www.parliament.bg/bg/bills/ID/167645',
+      kind: 'docx',
+      access: 'open',
+      note: 'Внесена версия от 16.11.2026: законопроектът и мотивите със средносрочната прогноза. Предишната публикация от 06.11.2026 е запазена като исторически източник.',
+    },
+  };
+}

@@ -3,7 +3,7 @@ import { beforeAll, expect, it } from 'vitest';
 import { runGraph } from '../build/graph.js';
 import { loadWave13bFixture } from '../build/wave13b-fixture.js';
 import { wave13bStages } from '../build/wave13b.js';
-import { LAUNCH_REVISIONS, reviseLaunchTexts } from './launch-texts.js';
+import { LAUNCH_REVISIONS, reviseLaunchTexts, reviseAnnualSources } from './launch-texts.js';
 
 const root = resolve(import.meta.dirname, '../../test/fixtures');
 const used = new Set<string>();
@@ -92,4 +92,21 @@ it('has no unavailable dataset declarations or source descriptions', () => {
     false,
   );
   expect(JSON.stringify(authored.aggregation)).not.toMatch(/\bP0[247]\b/);
+});
+
+it('cites the active Word publication without changing historical sources', () => {
+  const old = {
+    budget2027: { url: 'https://www.minfin.bg/bg/1802', kind: 'pdf', note: '06.11.2026' },
+    other: { title: 'Other source' },
+  };
+  const active = reviseAnnualSources(old, { format: 'docx', publication: '2026-11-16' });
+  expect(active.budget2027.url).toBe('https://www.parliament.bg/bg/bills/ID/167645');
+  expect(active.budget2027.kind).toBe('docx');
+  expect(active.budget2027.note).toContain('Внесена версия от 16.11.2026');
+  expect(active.other).toBe(old.other);
+  expect(old.budget2027.kind).toBe('pdf');
+  expect(reviseAnnualSources(old, {})).toBe(old);
+  expect(() => reviseAnnualSources(old, { format: 'docx', publication: '2026-12-01' })).toThrow(
+    'Unsupported',
+  );
 });
