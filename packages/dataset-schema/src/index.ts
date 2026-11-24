@@ -81,7 +81,6 @@ const cigaretteTaxGuard = shape({
   basis: string,
   quote: string,
 });
-const absentPage = described((value: unknown): value is null => value === null, { type: 'null' });
 const measurePageEntry = shape({
   id: string,
   starts: string,
@@ -101,8 +100,6 @@ const measureNativeEntry = shape({
   quote: string,
   table: string,
   row: number,
-  page: absentPage,
-  tablePage: absentPage,
   sourceLocation: shape({
     member: literal('word/document.xml'),
     paragraph: number,

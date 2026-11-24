@@ -65,6 +65,9 @@ export function extractParliamentBill(document: Document, source: Data): Data {
   }
   flush();
   const { arts, misc } = records(stream);
+  // Word uses physical table addresses rather than fixed PDF pagination.
+  for (const occurrences of Object.values(arts))
+    for (const budget of occurrences) budget.pages = [];
   for (const items of Object.values(misc))
     for (const item of items) {
       if (!item.text) continue;

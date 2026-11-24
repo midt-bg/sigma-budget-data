@@ -16,10 +16,10 @@ type Entry = {
   text: string;
   quote: string;
   law?: string;
-  page: number | null;
+  page?: number;
   sourceLocation?: { member: string; paragraph: number; table: number; row: number };
   to?: number;
-  tablePage: number | null;
+  tablePage?: number;
 };
 const root = resolve(import.meta.dirname, '../../../..');
 const member = 'ZDBRB-2027/4-UMTBF-2027-2029-motivi.pdf';
@@ -98,14 +98,14 @@ function each() {
 }
 function assertQuote(entry: Entry) {
   if (nativeParagraphs) {
-    expect(entry.page).toBeNull();
+    expect(entry.page).toBeUndefined();
     expect(entry.sourceLocation?.member).toBe('word/document.xml');
     expect(nativeParagraphs[entry.sourceLocation!.paragraph], entry.id).toContain(
       norm(entry.quote),
     );
     return;
   }
-  if (entry.page === null) throw new Error('Missing source page');
+  if (entry.page == null) throw new Error('Missing source page');
   const last = entry.to ?? entry.page;
   expect(last, entry.id).toBeGreaterThanOrEqual(entry.page);
   const text = Array.from({ length: last - entry.page + 1 }, (_, i) =>
@@ -143,7 +143,7 @@ it('finds every complete verbatim quote at its original PDF or native Word addre
 it('binds physical table addresses to every published cell of the same measure', () => {
   for (const { entry, row } of each()) {
     if (nativeParagraphs) {
-      expect(entry.tablePage).toBeNull();
+      expect(entry.tablePage).toBeUndefined();
       for (const cell of Object.values(row.cells) as any[]) {
         const loc = provenance.entries[cell.provenance].location;
         expect(loc.table).toBe(entry.sourceLocation!.table);

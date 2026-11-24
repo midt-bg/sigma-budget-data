@@ -74,7 +74,8 @@ export function verifyParliamentCells(archive: Uint8Array, entries: Record<strin
       } else {
         const table = tables[loc.table];
         const row = table?.children.filter((n) => n.uri === w && n.local === 'tr')[loc.row];
-        const col = entry.rawColumn ?? loc.columns[Number(entry.extraction.split('/').at(-1))];
+        const col =
+          loc.column ?? entry.rawColumn ?? loc.columns[Number(entry.extraction.split('/').at(-1))];
         const cell = row?.children.filter((n) => n.uri === w && n.local === 'tc')[col];
         if (cell) raw = text(cell);
       }

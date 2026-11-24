@@ -107,6 +107,7 @@ it('preserves the 225 actual project rows and explains the removed original row 
   ).toEqual([{ id: 'NP-25.001-0169', values: [520, 520, 520] }]);
   expect(document.paragraphs.join('\n')).not.toContain('NP-25.001-0169');
   expect(bill.projects.rows.at(-1).n).toBe(225);
+  expect(Object.values(bill.bill).every((b: any) => b.pages.length === 0)).toBe(true);
   expect(bill.projects.rows.find((r: any) => r.id === 'NP-25.001-0016').values).toEqual([
     81681.3, 392572.9, 401012.2,
   ]);
@@ -141,7 +142,7 @@ it('publishes the new vintage and physical Word/EMF addresses without invented p
   expect(outputs['outlook.json'].byPeriod['2027.draft'].publication).toBe('2026-11-16');
   const entries = Object.values(outputs['budget2027-provenance.json'].entries) as any[];
   expect(entries.every((e) => e.operands || e.location)).toBe(true);
-  expect(entries.every((e) => e.page === undefined || e.page === null)).toBe(true);
+  expect(entries.every((e) => e.page === undefined)).toBe(true);
 });
 
 it('rejects corrupted original bytes before extracting them', () => {

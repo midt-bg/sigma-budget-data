@@ -83,7 +83,19 @@ function physicalFinder(bill: BillExtraction) {
       const printed = table.rawCells[rawRow]?.[rawColumn];
       if (typeof printed !== 'string' || numericBillCell(printed) !== value)
         throw new Error('DOCX physical cell does not match ' + path);
-      return { table: table.id, page: null, printed, rawRow, rawColumn, location: address };
+      return {
+        table: table.id,
+        page: null,
+        printed,
+        rawRow,
+        rawColumn,
+        location: {
+          member: address.member,
+          table: address.table,
+          row: address.row,
+          column: rawColumn,
+        },
+      };
     }
     if (row.table != null) {
       const table = bill.tables.find((t: any) => pointer(t, '/id') === row.table);
@@ -174,20 +186,26 @@ function billLeaf(
   const numberKey = ['no', 'n', 'name'].find((key) => Object.hasOwn(row, key) && truth(row[key]));
   return lineage.leaf('B', valuePath, `budget2027.json#/${path}`, UNIT, period, {
     table: physical.table,
-    page: physical.page,
+    ...(physical.location ? {} : { page: physical.page }),
     label: pyOr(row.text, row.name, 'Без отпечатан етикет'),
     no: numberKey ? catalogPythonStringAt(row, numberKey) : 'unprinted',
     column: {
-      label: column === null ? 'Сума (хил. евро)' : `column ${column}`,
+      ...(physical.location
+        ? {}
+        : { label: column === null ? 'Сума (хил. евро)' : `column ${column}` }),
       year: Number(period.slice(0, 4)),
     },
     variant,
     printed: physical.printed,
     ...(physical.location ? { location: physical.location } : {}),
-    rowOrdinal: match ? Number(match[1]) : 0,
-    ...(physical.rawRow !== undefined
-      ? { rawRow: physical.rawRow, rawColumn: physical.rawColumn }
-      : {}),
+    ...(physical.location
+      ? {}
+      : {
+          rowOrdinal: match ? Number(match[1]) : 0,
+          ...(physical.rawRow !== undefined
+            ? { rawRow: physical.rawRow, rawColumn: physical.rawColumn }
+            : {}),
+        }),
   });
 }
 function budgetBill(lineage: AnnualLineage): BillExtraction {
@@ -372,8 +390,9 @@ export function buildBudgetDebtLimits(lineage: AnnualLineage): Record<string, an
       operation: 'parse-billion-euro',
       period: DEFAULT,
       variant: 'bill',
-      page: pointer(row, '/page'),
-      ...((row as any).location ? { location: (row as any).location } : {}),
+      ...((row as any).location
+        ? { location: (row as any).location }
+        : { page: pointer(row, '/page') }),
       unit: 'млрд. €',
       printed: match[0],
       label: pyOr(row.text, 'Без отпечатан етикет'),
