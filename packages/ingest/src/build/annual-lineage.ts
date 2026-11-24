@@ -283,7 +283,7 @@ export class AnnualLineage {
         row: rowIndex,
         label: pointer(row, '/label'),
         column,
-        page: row.page,
+        ...(typeof row.page === 'number' ? { page: row.page } : {}),
         printed: row.printed[columnIndex],
         ...(row.location ? { location: row.location } : {}),
       },
