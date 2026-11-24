@@ -183,7 +183,7 @@ export function reviseAnnualSources<T extends Record<string, any>>(
       ...sources.budget2027,
       publisher: 'Министерство на финансите; Народно събрание',
       url: 'https://www.parliament.bg/bg/bills/ID/167645',
-      kind: 'docx',
+      kind: 'doc',
       access: 'open',
       note: 'Внесена версия от 16.11.2026: законопроектът и мотивите със средносрочната прогноза. Предишната публикация от 06.11.2026 е запазена като исторически източник.',
     },

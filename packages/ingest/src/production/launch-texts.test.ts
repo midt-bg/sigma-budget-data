@@ -101,7 +101,7 @@ it('cites the active Word publication without changing historical sources', () =
   };
   const active = reviseAnnualSources(old, { format: 'docx', publication: '2026-11-16' });
   expect(active.budget2027.url).toBe('https://www.parliament.bg/bg/bills/ID/167645');
-  expect(active.budget2027.kind).toBe('docx');
+  expect(active.budget2027.kind).toBe('doc');
   expect(active.budget2027.note).toContain('Внесена версия от 16.11.2026');
   expect(active.other).toBe(old.other);
   expect(old.budget2027.kind).toBe('pdf');
