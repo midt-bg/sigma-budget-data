@@ -365,6 +365,35 @@ sources:
     url: https://www.minfin.bg/upload/65334/Draft+Budgetary+Plan+of+the+Republic+of+Bulgaria+for+2027.pdf
     title: Проект на бюджетен план на Република България за 2027 г., 55 pages
 - id: budget2027
+  title: 'Законопроект за държавния бюджет 2027 и АСБП 2027–2029, внесени в Народното събрание на 16.11.2026'
+  publisher: Министерски съвет / Народно събрание
+  page: https://www.parliament.bg/bg/bills/ID/167645
+  access: open
+  acquisition: import
+  format: docx
+  parser: packages/ingest/src/readers/annual/parliament-document.ts
+  period: Законопроект за 2027 г. и прогноза 2028–2029 г., внесени на 16.11.2026
+  unit: хил. € (законопроект), млн. € и % от БВП (АСБП)
+  live: false
+  files:
+  - path: data/originals/budget_2027_parliament/52-602-01-71.docx
+    url: https://www.parliament.bg/bills/52/52-602-01-71.docx
+    title: Законопроектът, мотивите и АСБП 2027–2029
+  - path: data/originals/budget_2027_parliament/52-602-01-71.zip
+    url: https://www.parliament.bg/bills/52/52-602-01-71.zip
+    title: Приложени програмни бюджети и съпътстващи документи; самостоятелен източник за съпоставка
+  - path: data/originals/budget_2027_parliament/acquisition.json
+    title: Адреси, дата на придобиване и SHA-256 на официалните файлове и членовете им
+  members:
+  - role: forecast
+    archive: data/originals/budget_2027_parliament/52-602-01-71.docx
+    member: word/document.xml
+    sha256: f246b23fba7742caa3a607c00232c6055a49e258f4d184d18bf3596246fc58a0
+  - role: bill
+    archive: data/originals/budget_2027_parliament/52-602-01-71.docx
+    member: word/document.xml
+    sha256: f246b23fba7742caa3a607c00232c6055a49e258f4d184d18bf3596246fc58a0
+- id: budget2027-20261106
   title: 'Законопроект за държавния бюджет 2027 и материалите към него: ПЗДБРБ 2027 и АСБП 2027–2029'
   publisher: Министерство на финансите
   page: https://www.minfin.bg/bg/1802
@@ -783,11 +812,11 @@ intermediates:
   note: Frozen published editorial content. Original supplied editorial text unavailable; copying is reproducible, original authorship
     is not regenerated.
 - path: data/inputs/budget_forecast_2027.json
-  producer: packages/ingest/src/readers/annual/forecast.ts
+  producer: packages/ingest/src/readers/annual/parliament-forecast.ts
   inputs: [budget2027]
   reproducible: true
 - path: data/inputs/budget_bill_2027.json
-  producer: packages/ingest/src/readers/annual/bill.ts
+  producer: packages/ingest/src/readers/annual/parliament-bill.ts
   inputs: [budget2027]
   reproducible: true
 - path: data/inputs/measure_excerpts.json

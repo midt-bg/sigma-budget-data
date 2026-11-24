@@ -82,7 +82,7 @@ export async function executeRelease(context: Readonly<ExecutionContext>): Promi
     eager: false,
     contains: ['D39'],
     mock: false,
-    asOf: '2026-11-06',
+    asOf: budget.publication,
     mediaType: 'application/json',
     source: ['budget2027'],
     file: 'data/measures2027.json',

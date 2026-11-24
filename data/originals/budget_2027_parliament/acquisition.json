@@ -1,0 +1,587 @@
+[
+  {
+    "file": "52-602-01-71.docx",
+    "url": "https://www.parliament.bg/bills/52/52-602-01-71.docx",
+    "retrieved": "2026-11-24",
+    "publication": "2026-11-16",
+    "sha256": "183c1863afb530446fa9a2eb34ea253de7ef83e48270b0550b7546787fb2db0f",
+    "bytes": 2194815,
+    "members": [
+      {
+        "name": "[Content_Types].xml",
+        "sha256": "cb8895388010c8b6f3468ff2faffbbf23c568fd7d228add56e90347ee56d764e",
+        "bytes": 5502
+      },
+      {
+        "name": "_rels/.rels",
+        "sha256": "e19238d7a71fa7a2490776252686f70e2de6238c87cd509b5e3a3cc07c2ea4df",
+        "bytes": 590
+      },
+      {
+        "name": "word/_rels/document.xml.rels",
+        "sha256": "c6002dd8429bed24b09defcb2e784c1869a3d3432d7113f277c677340b7eee9d",
+        "bytes": 6986
+      },
+      {
+        "name": "word/document.xml",
+        "sha256": "f246b23fba7742caa3a607c00232c6055a49e258f4d184d18bf3596246fc58a0",
+        "bytes": 22352206
+      },
+      {
+        "name": "word/footer11.xml",
+        "sha256": "ec7e60582e59f54999272d5743356020ec43ff141d0f34d148e3114fa305be21",
+        "bytes": 6334
+      },
+      {
+        "name": "word/footer6.xml",
+        "sha256": "85c014d0cbb18dfabef34383e6c6d3bdd0d246f6a4c1341e79b7b1515cf2c6cc",
+        "bytes": 2956
+      },
+      {
+        "name": "word/header9.xml",
+        "sha256": "d66057250e4e99c8f951ef6c8a8aa26bc8d3b8379eb9a3be9aa23dd8f35cc4ec",
+        "bytes": 2332
+      },
+      {
+        "name": "word/header8.xml",
+        "sha256": "bad18020100f2d89a0eef9fc6686e082655eb3bced6639c2ba5c10588fc916c8",
+        "bytes": 2332
+      },
+      {
+        "name": "word/_rels/footnotes.xml.rels",
+        "sha256": "564a2ae53e782cbd596329b79c8b7d41028e79ddf6380f59a91919dd64cd62ef",
+        "bytes": 583
+      },
+      {
+        "name": "word/footer5.xml",
+        "sha256": "8c063a65179215bacae837762c13141a65999a1c65785a0485adc30c34881202",
+        "bytes": 2956
+      },
+      {
+        "name": "word/header6.xml",
+        "sha256": "cad6dc86ed3d1c9a8d09c958def1dbb5456a4a17fbf4b2f5b6e471fc4788ab99",
+        "bytes": 2332
+      },
+      {
+        "name": "word/header10.xml",
+        "sha256": "9d1e151e5767cb3f6801abc09a41a4770546783a1ae2854c6c3af350d8c0f950",
+        "bytes": 2332
+      },
+      {
+        "name": "word/footer7.xml",
+        "sha256": "ee11f4fc3e57af487f2341d5d7cb433aa2d81718ba2f01f60244f9c729549687",
+        "bytes": 3075
+      },
+      {
+        "name": "word/header11.xml",
+        "sha256": "f74c7aac016d36abafb77b9aa7d3103adc0d86e3a00f527c936364e1e7fbbedd",
+        "bytes": 2332
+      },
+      {
+        "name": "word/footer10.xml",
+        "sha256": "45653d3fbe844907285cc8df8ed16dc91cd8e2aeda978da159e9a222c81a4391",
+        "bytes": 5453
+      },
+      {
+        "name": "word/footer9.xml",
+        "sha256": "c0b6a5300309af4160b96682ac50ff48b6349691bd99c19e1b6e6b86f013269d",
+        "bytes": 3407
+      },
+      {
+        "name": "word/footer8.xml",
+        "sha256": "3d3cadcb9fc06fa3a26b9f6a6b32494e876e644926c074c0c727008c86fa964c",
+        "bytes": 3408
+      },
+      {
+        "name": "word/header13.xml",
+        "sha256": "9639fe85d09e17d2f0a803d466f5bf2c50b61a36535f37d439b92a00ee14c7b7",
+        "bytes": 2332
+      },
+      {
+        "name": "word/header12.xml",
+        "sha256": "143c52f69b650b13ce4ad61e0bca8505d9e327ef878f3f3162e2b9c8aa6a621c",
+        "bytes": 2311
+      },
+      {
+        "name": "word/header5.xml",
+        "sha256": "114ac33b4a082b478f2405c9e32b2912858f06792e7b3adf467bb75f053cf907",
+        "bytes": 3024
+      },
+      {
+        "name": "word/header7.xml",
+        "sha256": "2391871a0ed8b869f475a65640837b692281bfe0a62604fd04c65c1f6bd895ea",
+        "bytes": 2332
+      },
+      {
+        "name": "word/header2.xml",
+        "sha256": "edec6a43495a16072bce70f1fa5387028e0d5e8a6596dfeeee6f03bc546d51e1",
+        "bytes": 2332
+      },
+      {
+        "name": "word/footer4.xml",
+        "sha256": "b427b59e1367955ef397dc01f0c570a6166dc7df088bd0879e1bbff02468d6d0",
+        "bytes": 3407
+      },
+      {
+        "name": "word/header1.xml",
+        "sha256": "eeb0929911abf5fdda842fba9d0dac2dbb3b2344d87a8d566fa6253ec602f977",
+        "bytes": 7312
+      },
+      {
+        "name": "word/footer3.xml",
+        "sha256": "f659ac05c69a277d9d0f7ac246087ca06452c69b80a0039c57998f5ab5ddc394",
+        "bytes": 3146
+      },
+      {
+        "name": "word/footer1.xml",
+        "sha256": "4344a6863c9ebedae73dd2e99c2d62b1abacbcf2c778cc43906f5735d7423adf",
+        "bytes": 2998
+      },
+      {
+        "name": "word/footer2.xml",
+        "sha256": "f4cc989d2ade21be17f07169c2b1bc33132d80ebd3859bf7999ef2145861d8f8",
+        "bytes": 3058
+      },
+      {
+        "name": "word/header3.xml",
+        "sha256": "2c5a9b7b38fa562573b17b2570beb1f5934e1c83e2a82d9db68ebb8d5024cf76",
+        "bytes": 2332
+      },
+      {
+        "name": "word/header4.xml",
+        "sha256": "a82da6daa868a5bac25c54ac38616a9104245625d9a2eabf3d693dab920e3f5d",
+        "bytes": 3024
+      },
+      {
+        "name": "word/endnotes.xml",
+        "sha256": "a5ecba067263124377ee7793f7f1a8244e47e65a23ca4f8b32b9fa2bcf9a4dfb",
+        "bytes": 2538
+      },
+      {
+        "name": "word/footnotes.xml",
+        "sha256": "037fd8c8d5f4e7ef7cddee53a1c74facbdd2df11b7116205788ca65eb25782f7",
+        "bytes": 71118
+      },
+      {
+        "name": "word/media/image17.emf",
+        "sha256": "b679f1fb4d21328b07d8679248f772219d769aed08acb684d3705ab60489179e",
+        "bytes": 48976
+      },
+      {
+        "name": "word/media/image15.png",
+        "sha256": "1ea5f8e1b6d655067770b634301e763d16cdecc366dddad475c56237452a5e64",
+        "bytes": 54222
+      },
+      {
+        "name": "word/theme/theme1.xml",
+        "sha256": "bf4992e3fa7832e5c68fdbc4ec5189c8e5d347fef03c5ba2522ad704bde5078f",
+        "bytes": 6992
+      },
+      {
+        "name": "word/theme/themeOverride1.xml",
+        "sha256": "b76eef04a4f09e0993a7dfbbc82185ea26460712e1367a97ddaaa7cdf536a7df",
+        "bytes": 6441
+      },
+      {
+        "name": "word/charts/_rels/chart1.xml.rels",
+        "sha256": "29eaa254770bc94c2fc89e2bbf547e9a0e67911b0c75a3f9d74187c86d345775",
+        "bytes": 698
+      },
+      {
+        "name": "word/media/image19.emf",
+        "sha256": "e571ba767ff8ce7f4e0c97ae75dbf40252c3c1a46ef7148541f4f9fca865a941",
+        "bytes": 48040
+      },
+      {
+        "name": "word/media/image3.png",
+        "sha256": "8c7d07640872b1f538a2eb51aec019ee7cb70eb5cd2e09f02c640f907acaf006",
+        "bytes": 9473
+      },
+      {
+        "name": "word/media/image2.emf",
+        "sha256": "4cb5eb09de955ed182f05c9c4d68cf880a0a9ea2da7fc4c3c50d1ffd924ac382",
+        "bytes": 4276
+      },
+      {
+        "name": "word/media/image1.wmf",
+        "sha256": "5341b11f75ec541beecf17b555615c7a22253bc3ec1fc10a75f7bf54ce6046d5",
+        "bytes": 60698
+      },
+      {
+        "name": "word/media/image18.emf",
+        "sha256": "a83743ba336c285af930892ccba101fdef8de5b71da4f04c2f481ec3339d271c",
+        "bytes": 44844
+      },
+      {
+        "name": "word/media/image16.emf",
+        "sha256": "7e3d3649ed1f0587b12791d2813fee4fbe8017efd8fe983b497f62d2d6f84f8b",
+        "bytes": 47356
+      },
+      {
+        "name": "word/charts/colors1.xml",
+        "sha256": "04fefba7d31853fa0aa636e5c8b8e308fc3126a9b48a1f4490947fff91d5a92f",
+        "bytes": 878
+      },
+      {
+        "name": "word/media/image13.png",
+        "sha256": "ba33565c708f33b9b6c863e15498f0e194efb12fdb9ea50057ee1f4d3424c01a",
+        "bytes": 51778
+      },
+      {
+        "name": "word/media/image6.png",
+        "sha256": "4aa76ac268bf71d23045e1f713c675665c5b5ed6a2de79e8653b5a590e3bd278",
+        "bytes": 57921
+      },
+      {
+        "name": "word/media/image5.png",
+        "sha256": "dec0181cef1c898fa606a0dc57bc2e94d916efa76043c81d1cd15d2915c15870",
+        "bytes": 65772
+      },
+      {
+        "name": "word/media/image4.png",
+        "sha256": "f9bd7352759e47b155962d78b7b69cb18cd387448df876d338db399868e97f21",
+        "bytes": 83955
+      },
+      {
+        "name": "word/charts/style1.xml",
+        "sha256": "77cdb029b8649d777a06ba38f8fa0ba9ca94393a15b79b4fd1160faf5941c722",
+        "bytes": 9863
+      },
+      {
+        "name": "word/embeddings/oleObject1.bin",
+        "sha256": "1dc0c8d7304c177ad0e74d3d2f1002eb773f4b180685a7df6bbe75ccc24b0164",
+        "bytes": 1536
+      },
+      {
+        "name": "word/media/image14.png",
+        "sha256": "ecdc333834625b783496f667f78013b8f9446a333365d47d4df1177a0abccf8a",
+        "bytes": 55351
+      },
+      {
+        "name": "word/media/image7.png",
+        "sha256": "977a63261bd36199ea8f5efe9892c58e28add49cdff34822695f42c5bde354e2",
+        "bytes": 61516
+      },
+      {
+        "name": "word/media/image8.png",
+        "sha256": "69cc9f26953e160f2cac73ca91703613ebe63dc5fdf6b4e3eb40569bd9c1b448",
+        "bytes": 43191
+      },
+      {
+        "name": "word/media/image12.png",
+        "sha256": "baa3fe8218071cf41b882521644db8f6225e7cf8325736c78c7f3dbffaee66d1",
+        "bytes": 49657
+      },
+      {
+        "name": "word/media/image11.png",
+        "sha256": "53d4290977ad580bee16047758452d5832adba969fd6a96635c9665d5b94ad40",
+        "bytes": 6952
+      },
+      {
+        "name": "word/charts/chart1.xml",
+        "sha256": "d98ea6a5de272a515e4dcbe10bf60f49475dd1cf67152cb6a6edba20210864f8",
+        "bytes": 11635
+      },
+      {
+        "name": "word/media/image10.png",
+        "sha256": "fade7273cf70b86f85125a49f20355b2a891d57ec891405b796d0d5421d069ee",
+        "bytes": 11293
+      },
+      {
+        "name": "word/media/image9.png",
+        "sha256": "4e72ca4f39ccdd4577d3d109f93b85dbc332cedfdd465bad92512d8d5cc18a4e",
+        "bytes": 119868
+      },
+      {
+        "name": "word/_rels/settings.xml.rels",
+        "sha256": "4a4f7fd4dd9b50d3f54a542219b5d91c10704f54cab27a218aed2468a4dce2c1",
+        "bytes": 362
+      },
+      {
+        "name": "word/settings.xml",
+        "sha256": "7f7339021640e35baa35741489c58e36948e110af5265a91d9865e9e42f7250c",
+        "bytes": 11862
+      },
+      {
+        "name": "word/webSettings.xml",
+        "sha256": "d79fe56dd0ddfe17bf111d9f8c6cc2e0fc5e9ca7adb5f28b2af5e7dc837e0717",
+        "bytes": 2598
+      },
+      {
+        "name": "word/numbering.xml",
+        "sha256": "89f8b74a36554a0428d879150e84674e3dbc3eb3039b40e4b1f4dbf1d933fee5",
+        "bytes": 119770
+      },
+      {
+        "name": "docProps/app.xml",
+        "sha256": "6b92d6eec210a794fb098ba9d575e16254e633c392cbcfbcd979e59e4c53ab8d",
+        "bytes": 1261
+      },
+      {
+        "name": "docProps/core.xml",
+        "sha256": "b987db1d4c9c3e7582827643ac6545f46106d0d206d196f666627c0885c7c012",
+        "bytes": 880
+      },
+      {
+        "name": "word/fontTable.xml",
+        "sha256": "3d012a1cc450b01e3b8549171a5813735a8c737296979097af258e6418c94253",
+        "bytes": 4922
+      },
+      {
+        "name": "word/styles.xml",
+        "sha256": "a7ba6d8bdcc6a681d31a2d30b656ef6c23c7da3c7ae721a78a88162cb7a052ab",
+        "bytes": 171855
+      }
+    ]
+  },
+  {
+    "file": "52-602-01-71.zip",
+    "url": "https://www.parliament.bg/bills/52/52-602-01-71.zip",
+    "retrieved": "2026-11-24",
+    "publication": "2026-11-16",
+    "sha256": "a7cb85a4dc0b2d20e16e809502d8cfb96d415711a1ad65d8ce42d1cb766c6505",
+    "bytes": 67508438,
+    "members": [
+      {
+        "name": "0100 - НС.pdf",
+        "sha256": "89db2edf8eaee3e0a8ada191a249a97451af716df11d1f3052fe4c3026d8ed01",
+        "bytes": 1861613
+      },
+      {
+        "name": "0200 - АП.pdf",
+        "sha256": "b9589a992e9dc68ec67e64af9bf5ccebbbf9442302eac64def932d751a9027f5",
+        "bytes": 574619
+      },
+      {
+        "name": "0300 - МС.pdf",
+        "sha256": "5f77731dafa77cc7eed884d11d5f459f6c241055584a125c6cfa30b0c9000a93",
+        "bytes": 2229044
+      },
+      {
+        "name": "0400 - КС.pdf",
+        "sha256": "2fb5daed52a239b091029e0ccc7c4b2f96223a6dd709fa8123951e4147371d47",
+        "bytes": 596615
+      },
+      {
+        "name": "0500 - СП.pdf",
+        "sha256": "8ff8b306ad16aa98cbd6e7a70cfe1ac37e184284335d6d3362c7fa2630f65fb6",
+        "bytes": 831942
+      },
+      {
+        "name": "0600_ВСС Програмен формат на бюджет-2027-2029.pdf",
+        "sha256": "8fce1972aaab2107574881f739bb6efabc20c3cfca537b8332347c9632377dd7",
+        "bytes": 1658884
+      },
+      {
+        "name": "1000 - МФ.pdf",
+        "sha256": "a46a6ea2bc8ad6e9449ba1c9eaed1bb0f7524880f4a0bc48ce1dbdb20cb69f2b",
+        "bytes": 2518793
+      },
+      {
+        "name": "1100 МВнР.pdf",
+        "sha256": "a5df50270bbd308ac0354cfdfd09dedf79aa7215525b028f940910409f11ec9a",
+        "bytes": 1789598
+      },
+      {
+        "name": "1200 - МО.pdf",
+        "sha256": "8fa03532beb683fd48cbfbfc6b5e00c43833f2e3867f54b1a3d1ce52d70d2c6b",
+        "bytes": 1215984
+      },
+      {
+        "name": "1300 - МВР.pdf",
+        "sha256": "fdf62c4a0eeb9152bde7aa4040c3f9f1191b3a0c15b9d6a4208ec17e571f8c87",
+        "bytes": 1169323
+      },
+      {
+        "name": "1400 - МП.pdf",
+        "sha256": "1bdeba63738638c9170ef87443590b2d678b07c68566ea7db45f9ea4dd6cb370",
+        "bytes": 1518426
+      },
+      {
+        "name": "1500 - МТСП.pdf",
+        "sha256": "5abef6aaabc1ce14f89374268297272af27a06b7d4cebcc8bc514f4630852f4e",
+        "bytes": 3204195
+      },
+      {
+        "name": "1600 - МЗ.pdf",
+        "sha256": "7d4ebc56dc582db6208cdf0f13c4be333b043bdc03e525f91ca0a87df1537773",
+        "bytes": 2700064
+      },
+      {
+        "name": "1700 - МОН.pdf",
+        "sha256": "9d234cf318d7cd01c88029f3d858bea62ac91588e57fec9f4d498fe273d5f5d6",
+        "bytes": 2264728
+      },
+      {
+        "name": "1800 - МК.pdf",
+        "sha256": "55aa103f5c9928068df1f45c3a83323776838d9fd75ae3554863efe1624d2dd9",
+        "bytes": 2515808
+      },
+      {
+        "name": "1900 - МОСВ.pdf",
+        "sha256": "ccf2bb952f50b55cea0e4dddb336dd56b8ff26df02e601dbec1008236c97bcec",
+        "bytes": 2876165
+      },
+      {
+        "name": "2000 - МИИИ.pdf",
+        "sha256": "5a12e7fd0c5f3cd9f71e49d9e54ac85c0989517f6d26dc5725890ca1fc3d73ca",
+        "bytes": 2669492
+      },
+      {
+        "name": "2100 - МРРБ.pdf",
+        "sha256": "9a44517abfac27301d195744da85fe02267eb04975a1e44e78da7b0058880edf",
+        "bytes": 1774119
+      },
+      {
+        "name": "2200 - МЗХ.pdf",
+        "sha256": "d830d81fbb300d99b6ff97322dbbb89174b5be6b10b6b71e2b6bcff2df2839e8",
+        "bytes": 2805085
+      },
+      {
+        "name": "2300 - МТС.pdf",
+        "sha256": "e8a0943783b883314f04ed6f6e07dcfe1c0f826b580bf8dbfbb38a94cd7c30a4",
+        "bytes": 3306117
+      },
+      {
+        "name": "2400 - МЕ.pdf",
+        "sha256": "d5420eb48343e9ae8dd220b10965294b4b3adc6328568b538e398c39fb34b146",
+        "bytes": 1573714
+      },
+      {
+        "name": "2500 - ММС.pdf",
+        "sha256": "045f86b71481b2ced648775693f9f3be97f5bfb8372bc5b38706257e3b61f72a",
+        "bytes": 1877278
+      },
+      {
+        "name": "3000 - ДАНС.pdf",
+        "sha256": "361c80726702cdbf7a27644a19eff39371996b8354ab94925b6c0ae11290d64a",
+        "bytes": 636944
+      },
+      {
+        "name": "3200 - КРДОПБГДСРСБНА.pdf",
+        "sha256": "c61a375a4824626556dcbbe335586a0f53a468e3514d18d6aaa78c2ebe591a3e",
+        "bytes": 707852
+      },
+      {
+        "name": "3300 - КЗД.pdf",
+        "sha256": "4ee7286bd8645ac6d65f4893b28372454cee9263a3e55d16a1af2e72528f894a",
+        "bytes": 589472
+      },
+      {
+        "name": "3400 - КЗЛД.pdf",
+        "sha256": "c00769a1a6429c2e08ed06c0bbbc44fecc09bdbdece498fac1455a7c85e0a5a2",
+        "bytes": 612479
+      },
+      {
+        "name": "3700 - КОНПИ.pdf",
+        "sha256": "4dc815f34c96431be95700b302df9ecd784d3dffe97ee61b296e2bb5173af248",
+        "bytes": 1198205
+      },
+      {
+        "name": "3800 - НСО.pdf",
+        "sha256": "e68a70474cc5a470e3671c89dc3646eb2a1ab4a10a278abf565d0fa6dfba5a09",
+        "bytes": 646024
+      },
+      {
+        "name": "4.СТАНОВИЩЕ_МС-ПБСВ_2027.docx",
+        "sha256": "9cbe7e4fdc27b9c211c6dfbdc6853be2234cd79f124dd6aecc92370752c8601f",
+        "bytes": 30669
+      },
+      {
+        "name": "4000 - Омбудсман.pdf",
+        "sha256": "5ad32cdceae5cb5e3762a6ecd8e59757fcf8432c4aa1ffaef26bfb22d88adb28",
+        "bytes": 794467
+      },
+      {
+        "name": "4100 - НСИ.pdf",
+        "sha256": "09d6aff750266480c59c8f5f13d90646e6ad47d23d31884dc64411d3d4bdde6c",
+        "bytes": 678023
+      },
+      {
+        "name": "4200 - КЗК.pdf",
+        "sha256": "8d781bcf78cb4f4a5574d8e2c4ab204fd7a11f9b6e9fbce34c21160917a78072",
+        "bytes": 588593
+      },
+      {
+        "name": "4300 - КРС.pdf",
+        "sha256": "8312c7610ca734b660ef8eda8e29e6c5ce3c109f7c3109c050ec5811b4a224eb",
+        "bytes": 621130
+      },
+      {
+        "name": "4400 - СЕМ.pdf",
+        "sha256": "5b74de428d2f04d3c556c4df00bb85dbdf00a33775f673419c9655655179426a",
+        "bytes": 721943
+      },
+      {
+        "name": "4500 - КЕВР.pdf",
+        "sha256": "25261a127b9c12d130b840195c399770764a16eb0590245fdf3b562162dc593d",
+        "bytes": 631638
+      },
+      {
+        "name": "4600 - АЯР.pdf",
+        "sha256": "bbc9f197c78f9692cd2988f9aa16cfd443c7f302de2ca6bd57e35f87be9ae279",
+        "bytes": 648203
+      },
+      {
+        "name": "4800 - ДКСИ.pdf",
+        "sha256": "3f772c6951c6b57d11ec9f83901f6a8d3f4700ffe3f799469914fd8ced9c0179",
+        "bytes": 596536
+      },
+      {
+        "name": "5300 - ДРВВЗ.pdf",
+        "sha256": "1f6a5ad014931f84eb88e5049ec6f3ebd5e58e1f94651c4eab1e969d915d1b1e",
+        "bytes": 658254
+      },
+      {
+        "name": "6.Протокол от консултациите с НСОРБ по чл. 77 от ЗПФ.pdf",
+        "sha256": "978314ac255b84b18df72693dbba1b6f388d2473f05cbfc4d05cf8d164057147",
+        "bytes": 17722758
+      },
+      {
+        "name": "7100 - МТ.pdf",
+        "sha256": "2a7bc61664467fb9c7609ac4d429f8f1158c18afb6309f58afb419259ac65a71",
+        "bytes": 1511601
+      },
+      {
+        "name": "7400 - МИДТ.pdf",
+        "sha256": "c50de5b30754fae9ad64d7205bd5fb1cae643d29da04dbcacadb12fd5ab230f2",
+        "bytes": 2077015
+      },
+      {
+        "name": "8100 - КПК.pdf",
+        "sha256": "806677d0ab54a061d1f68fd4fb6faa39fbc0b4398ae93e4b948cb424c9920cc7",
+        "bytes": 726854
+      },
+      {
+        "name": "8200 - ЦИК.pdf",
+        "sha256": "94f7b2b284cedc03d89dd5c1067258f3b364160aafb028c9ce64f3203fc4863d",
+        "bytes": 655750
+      },
+      {
+        "name": "8300 - КПНРО.pdf",
+        "sha256": "97d071c267613ccbad79da60ca0f967186d9fb82bbf083ab02d7495a0f16964e",
+        "bytes": 631587
+      },
+      {
+        "name": "8400 - ДФЗ.pdf",
+        "sha256": "d67cff68b8cf808d7e3ca388c4a12920ee92093f27c3e998a4deaec39ef886c0",
+        "bytes": 1364336
+      },
+      {
+        "name": "8500 - НБКСРС.pdf",
+        "sha256": "719f8599cbfaa5e726a402bf26de6ee0a3ebff5933017823ee0c9fc2bd691c79",
+        "bytes": 943583
+      },
+      {
+        "name": "8600 - ДАТО.pdf",
+        "sha256": "8858fa58bff4fde850ce77182978a8fe89519c844aa12b5d36591d2dd53d8c21",
+        "bytes": 514640
+      },
+      {
+        "name": "ВСС-11540-МФ.pdf",
+        "sha256": "e2dcc11185218d4d9d1d6f0b5ab4eaa5289697d33d78eac9844f86e51962cce5",
+        "bytes": 163730
+      }
+    ]
+  }
+]

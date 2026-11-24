@@ -49,10 +49,11 @@ function valueAt(bill: BillExtraction, path: string): { value: number; text: str
 }
 type Physical = {
   table: string;
-  page: number;
+  page: number | null;
   printed: string;
   rawRow?: number;
   rawColumn?: number;
+  location?: Record<string, unknown>;
 };
 function physicalFinder(bill: BillExtraction) {
   const numeric = new Map<string | null, number | null>();
@@ -70,6 +71,20 @@ function physicalFinder(bill: BillExtraction) {
   const printedValues = new Map<string, Map<string, string>>();
   return (row: any, path: string, column: number | null): Physical => {
     const { value, text } = valueAt(bill, path);
+    if (bill.source.format === 'docx' && row.location) {
+      const table = bill.tables.find((t) => t.id === row.table);
+      if (!table) throw new Error('Missing DOCX physical table');
+      const address = row.location;
+      const rawRow = address.rawRow ?? address.row;
+      const rawColumn =
+        address.columns[
+          column === null ? 0 : path.includes('/projects/') ? column - 3 : column - 1
+        ];
+      const printed = table.rawCells[rawRow]?.[rawColumn];
+      if (typeof printed !== 'string' || numericBillCell(printed) !== value)
+        throw new Error('DOCX physical cell does not match ' + path);
+      return { table: table.id, page: null, printed, rawRow, rawColumn, location: address };
+    }
     if (row.table != null) {
       const table = bill.tables.find((t: any) => pointer(t, '/id') === row.table);
       if (!table) throw new Error('Missing physical table');
@@ -168,6 +183,7 @@ function billLeaf(
     },
     variant,
     printed: physical.printed,
+    ...(physical.location ? { location: physical.location } : {}),
     rowOrdinal: match ? Number(match[1]) : 0,
     ...(physical.rawRow !== undefined
       ? { rawRow: physical.rawRow, rawColumn: physical.rawColumn }
@@ -214,6 +230,35 @@ export function buildBudgetRows(lineage: AnnualLineage): Record<string, any> {
             cell,
           });
         }
+      // The parliamentary article may print a blank revenue cell while stating
+      // the complete balance identity. Preserve that blank row; publish the
+      // separately labelled calculation with all three printed operands.
+      if (bill.source.format === 'docx' && article !== '1' && item.headline.rev === null) {
+        const row = (section: string) => target.rows.find((r: any) => r.no === section + '.');
+        const expenditure = row('II'),
+          transfers = row('III'),
+          balance = row('IV');
+        const formula = balance?.label.replace(/[\s()]/gu, '').replaceAll('І', 'I');
+        if (expenditure && transfers && balance && formula?.endsWith('I-II+III')) {
+          const base = `budget2027.json#/budgets/${variant}/${article}`;
+          target.derivedRevenueBasis = lineage.derived(
+            `${base}/derivedRevenueBasis`,
+            DEFAULT,
+            'sum',
+            [expenditure.cell, balance.cell],
+            UNIT,
+          );
+          target.derivedRevenue = lineage.derived(
+            `${base}/derivedRevenue`,
+            DEFAULT,
+            'subtract',
+            [target.derivedRevenueBasis, transfers.cell],
+            UNIT,
+          );
+          target.derivedRevenueNote =
+            'Изчислено от отпечатаното равенство: приходи = салдо + разходи − трансфери. Приходната клетка в документа е празна.';
+        }
+      }
       budgets[variant][article] = target;
     }
   }
@@ -243,7 +288,15 @@ export function buildBudgetMunicipalities(lineage: AnnualLineage): Record<string
       );
       return { name: pointer(row, '/name'), region: pointer(row, '/region'), cells };
     });
-    const row = { name: 'ВСИЧКО:', page: Math.max(...source.pages) };
+    const row =
+      bill.source.format === 'docx'
+        ? {
+            name: 'ВСИЧКО:',
+            page: null,
+            table: (source as any).table,
+            location: (source as any).totalLocation,
+          }
+        : { name: 'ВСИЧКО:', page: Math.max(...source.pages) };
     budget.municipalTotals[section] = source.total.map((_x: number, c: number) =>
       billLeaf(
         lineage,
@@ -320,6 +373,7 @@ export function buildBudgetDebtLimits(lineage: AnnualLineage): Record<string, an
       period: DEFAULT,
       variant: 'bill',
       page: pointer(row, '/page'),
+      ...((row as any).location ? { location: (row as any).location } : {}),
       unit: 'млрд. €',
       printed: match[0],
       label: pyOr(row.text, 'Без отпечатан етикет'),
@@ -365,21 +419,32 @@ export function buildBudget2027(
   buildDate: string,
 ): { budget: Record<string, any>; provenance: Record<string, any> } {
   budgetBill(lineage);
+  const publication = lineage.inputs.B.source.publication ?? PUBLICATION;
+  const parliamentary = lineage.inputs.B.source.format === 'docx';
   const budget: Record<string, any> = {
-    meta: metadata('D34', 'Бюджет 2027: проект на МФ', buildDate, {
-      source: ['budget2027'],
-      sourceNote: SOURCE_NOTE,
-      asOf: PUBLICATION,
-    }),
+    meta: metadata(
+      'D34',
+      parliamentary ? 'Бюджет 2027: внесен законопроект' : 'Бюджет 2027: проект на МФ',
+      buildDate,
+      {
+        source: ['budget2027'],
+        sourceNote: parliamentary
+          ? 'Законопроектът и АСБП 2027–2029, внесени в Народното събрание на 16.11.2026.'
+          : SOURCE_NOTE,
+        asOf: publication,
+      },
+    ),
     schema: 'budget2027/1',
-    publication: PUBLICATION,
+    publication,
     defaultVariant: 'bill',
     budgets: {},
     municipal: {},
     projects: [],
     forecast: {},
     gaps: {
-      programmes: 'Няма пълен програмен архив за 2027–2029.',
+      programmes: parliamentary
+        ? 'Програмният архив за 2027–2029 е наличен към внесения законопроект. Подробните програмни страници на сайта засега показват отделно означените бюджети за 2026 г.'
+        : 'Няма пълен програмен архив за 2027–2029.',
       municipalForecast: 'Няма индивидуални общински разпределения за 2028–2029.',
       law: 'Публикацията е проект; не е приет закон.',
     },
@@ -394,8 +459,8 @@ export function buildBudget2027(
     provenance: {
       meta: metadata('D35', 'Произход на бюджетните числа за 2027', buildDate, {
         source: ['budget2027'],
-        sourceNote: SOURCE_NOTE,
-        asOf: PUBLICATION,
+        sourceNote: budget.meta.sourceNote,
+        asOf: publication,
       }),
       schema: 'budget2027-provenance/1',
       documents: lineage.documents,

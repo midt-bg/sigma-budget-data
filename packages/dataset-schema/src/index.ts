@@ -6,6 +6,8 @@ export { budgetSourceCells } from './budget-source-cells.js';
 import { stateBudgetGuard, kfpSubsectorsGuard } from './budget-tables.js';
 import {
   shape,
+  described,
+  type Guard,
   schemaOf,
   optionalPeriods,
   budgetProvenanceGuard,
@@ -79,6 +81,39 @@ const cigaretteTaxGuard = shape({
   basis: string,
   quote: string,
 });
+const absentPage = described((value: unknown): value is null => value === null, { type: 'null' });
+const measurePageEntry = shape({
+  id: string,
+  starts: string,
+  name: string,
+  text: string,
+  quote: string,
+  table: string,
+  row: number,
+  page: number,
+  tablePage: number,
+});
+const measureNativeEntry = shape({
+  id: string,
+  starts: string,
+  name: string,
+  text: string,
+  quote: string,
+  table: string,
+  row: number,
+  page: absentPage,
+  tablePage: absentPage,
+  sourceLocation: shape({
+    member: literal('word/document.xml'),
+    paragraph: number,
+    table: number,
+    row: number,
+  }),
+});
+const measure2027Entry: Guard<Record<string, any>> = described(
+  (value): value is Record<string, any> => measurePageEntry(value) || measureNativeEntry(value),
+  { anyOf: [schemaOf(measurePageEntry), schemaOf(measureNativeEntry)] },
+);
 export const datasetGuards = {
   'debt-issues.json': debtIssuesGuard,
   'state-budget.json': stateBudgetGuard,
@@ -250,21 +285,7 @@ export const datasetGuards = {
   'measures2027.json': shape({
     meta: metaGuard,
     LAWS: mapOf(string),
-    MEASURES_2027: mapOf(
-      list(
-        shape({
-          id: string,
-          starts: string,
-          name: string,
-          text: string,
-          quote: string,
-          table: string,
-          row: number,
-          page: number,
-          tablePage: number,
-        }),
-      ),
-    ),
+    MEASURES_2027: mapOf(list(measure2027Entry)),
   }),
   'measures.json': shape({
     meta: metaGuard,

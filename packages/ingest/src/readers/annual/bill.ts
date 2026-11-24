@@ -46,7 +46,7 @@ const headline = (rows: Data[]) => {
         if (squash(r.text).startsWith(label) && !(k in out)) out[k] = r.value;
   return out;
 };
-class Checks {
+export class Checks {
   results: Data[] = [];
   equal(label: string, parts: (number | null)[], total: number | null): void {
     assert(total !== null && parts.every((v) => v !== null), `${label}: missing amount`);
@@ -125,9 +125,9 @@ function physical(doc: PdfDocument): { stream: [number, 'p' | 't', any][]; table
   }
   return { stream, tables };
 }
-function budgetRows(table: Data): Data[] {
+export function budgetRows(table: Data): Data[] {
   const out: Data[] = [];
-  for (const raw of table.rawCells) {
+  for (const [rawIndex, raw] of table.rawCells.entries()) {
     const cells: string[] = raw.filter(Boolean);
     if (!cells.length) continue;
     if (!monetary(cells.at(-1)!)) {
@@ -153,11 +153,28 @@ function budgetRows(table: Data): Data[] {
           ? prefix.shift()!
           : '';
     if (prefix[0] === no) prefix.shift();
-    out.push({ no, text: ws(prefix.join(' ')), value, page: table.page, table: table.id });
+    out.push({
+      no,
+      text: ws(prefix.join(' ')),
+      value,
+      page: table.page,
+      table: table.id,
+      ...(table.physicalFormat === 'docx'
+        ? {
+            location: {
+              member: 'word/document.xml',
+              table: table.xmlTable,
+              row: table.rowIndices[rawIndex],
+              columns: [raw.findLastIndex((s: string) => Boolean(s))],
+              rawRow: rawIndex,
+            },
+          }
+        : {}),
+    });
   }
   return out;
 }
-function records(stream: [number, 'p' | 't', any][]): {
+export function records(stream: [number, 'p' | 't', any][]): {
   arts: Record<string, Data[]>;
   misc: Record<string, Data[]>;
 } {
@@ -370,7 +387,7 @@ function projects(tables: Data[]): Data {
     pages: Array.from({ length: 34 }, (_, i) => 126 + i),
   };
 }
-function validate(arts: Record<string, Data[]>, checks: Checks): void {
+export function validate(arts: Record<string, Data[]>, checks: Checks): void {
   assert(
     Object.keys(arts).length === 48 &&
       Array.from({ length: 48 }, (_, i) => arts[String(i + 1)]).every(Boolean),

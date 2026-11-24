@@ -107,7 +107,7 @@ export function executionAnnualFromPrepared(
       periodKey: '2026.law',
       basis: 'adopted-law',
       source: ['budget2027'],
-      asOf: '2026-11-06',
+      asOf: doc.publication ?? '2026-11-06',
       unit: 'млн. €',
       coverage: structuredClone(LAW_COVERAGE),
       note: 'Програма по ЗДБРБ 2026, МФ, приложение 1. Финансирането е балансова операция (-салдо).',
