@@ -379,9 +379,6 @@ sources:
   - path: data/originals/budget_2027_parliament/52-602-01-71.docx
     url: https://www.parliament.bg/bills/52/52-602-01-71.docx
     title: Законопроектът, мотивите и АСБП 2027–2029
-  - path: data/originals/budget_2027_parliament/52-602-01-71.zip
-    url: https://www.parliament.bg/bills/52/52-602-01-71.zip
-    title: Приложени програмни бюджети и съпътстващи документи; самостоятелен източник за съпоставка
   - path: data/originals/budget_2027_parliament/acquisition.json
     title: Адреси, дата на придобиване и SHA-256 на официалните файлове и членовете им
   members:
@@ -393,6 +390,20 @@ sources:
     archive: data/originals/budget_2027_parliament/52-602-01-71.docx
     member: word/document.xml
     sha256: f246b23fba7742caa3a607c00232c6055a49e258f4d184d18bf3596246fc58a0
+- id: budget2027-programmes
+  title: Програмни бюджети към внесения законопроект за 2027 г.
+  publisher: Министерски съвет / Народно събрание
+  page: https://www.parliament.bg/bg/bills/ID/167645
+  access: open
+  acquisition: import
+  format: zip
+  period: 2027–2029
+  unit: хил. €
+  live: false
+  files:
+  - path: data/originals/budget_2027_parliament/52-602-01-71.zip
+    url: https://www.parliament.bg/bills/52/52-602-01-71.zip
+    title: Запазен оригинал за съпоставка; не се използва като числов вход на текущото издание
 - id: budget2027-20261106
   title: 'Законопроект за държавния бюджет 2027 и материалите към него: ПЗДБРБ 2027 и АСБП 2027–2029'
   publisher: Министерство на финансите
